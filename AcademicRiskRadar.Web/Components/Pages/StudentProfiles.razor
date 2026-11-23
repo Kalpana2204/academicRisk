@@ -1,0 +1,767 @@
+
+@page "/students"
+@rendermode InteractiveServer
+@using System.Linq
+@using AcademicRiskRadar.Web.Services
+@inject AcademicDataService AcademicData
+
+<PageTitle>Student Profiles | Academic Risk Radar</PageTitle>
+
+<div class="students-page">
+
+    <div class="page-heading">
+        <div>
+            <h1>Student Academic Profiles</h1>
+            <p>
+                Explore centralized student records,
+                performance indicators and academic support needs.
+            </p>
+        </div>
+
+        <span class="demo-label">Shared Academic Data</span>
+    </div>
+
+    <div class="profile-workspace">
+
+        <!-- Student Directory -->
+        <aside class="directory-panel">
+
+            <div class="directory-heading">
+                <h2>Student Directory</h2>
+                <p>@FilteredStudents.Count() students found</p>
+            </div>
+
+            <div class="directory-search">
+                <input type="search"
+                       placeholder="Search name, ID, department..."
+                       aria-label="Search students"
+                       @bind="SearchText"
+                       @bind:event="oninput" />
+            </div>
+
+            <div class="directory-list">
+
+                @foreach (var directoryRecord in FilteredStudents)
+                {
+                    <button type="button"
+                            @key="directoryRecord.Id"
+                            class="directory-student @(SelectedId == directoryRecord.Id ? "selected" : "")"
+                            @onclick="() => SelectStudent(directoryRecord.Id)">
+
+                        <span class="directory-avatar">
+                            @GetInitials(directoryRecord.Name)
+                        </span>
+
+                        <span class="directory-info">
+                            <strong>@directoryRecord.Name</strong>
+                            <small>
+                                @directoryRecord.Id ·
+                                @directoryRecord.Department
+                            </small>
+                        </span>
+
+                        <span class="risk-indicator @directoryRecord.Risk.ToLowerInvariant()">
+                        </span>
+
+                    </button>
+                }
+
+                @if (!FilteredStudents.Any())
+                {
+                    <div class="directory-empty">
+                        No matching students found.
+                    </div>
+                }
+
+            </div>
+
+        </aside>
+
+        <!-- Selected Student Profile -->
+        <div class="profile-content">
+
+            @if (SelectedStudent is { } selectedProfile)
+            {
+                <!-- Student Identity -->
+                <section class="profile-card identity-card">
+
+                    <div class="identity-content">
+
+                        <div class="large-avatar">
+                            @GetInitials(selectedProfile.Name)
+                        </div>
+
+                        <div class="identity-details">
+
+                            <span class="eyebrow">
+                                STUDENT ACADEMIC RECORD
+                            </span>
+
+                            <h2>@selectedProfile.Name</h2>
+
+                            <p>
+                                @selectedProfile.Id ·
+                                @selectedProfile.Department
+                            </p>
+
+                            <div class="identity-tags">
+                                <span>@selectedProfile.Program</span>
+                                <span>Semester @selectedProfile.Semester</span>
+                                <span>Section @selectedProfile.Section</span>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="identity-risk">
+
+                        <span>Current Risk Band</span>
+
+                        <strong class="risk-badge @selectedProfile.Risk.ToLowerInvariant()">
+                            @selectedProfile.Risk Risk
+                        </strong>
+
+                        <small>Illustrative classification</small>
+
+                    </div>
+
+                </section>
+
+                <!-- Student Academic Metrics -->
+                <div class="profile-stats">
+
+                    <div class="metric-card">
+
+                        <span>Overall Attendance</span>
+
+                        <strong>@selectedProfile.Attendance%</strong>
+
+                        <small>Recorded attendance</small>
+
+                        <div class="mini-progress">
+                            <div class="progress-fill @(selectedProfile.Attendance < 75 ? "danger" : "success")"
+                                 style="@GetProgressStyle(selectedProfile.Attendance)">
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="metric-card">
+
+                        <span>Assessment Average</span>
+
+                        <strong>@selectedProfile.Assessment%</strong>
+
+                        <small>Current academic performance</small>
+
+                        <div class="mini-progress">
+                            <div class="progress-fill blue"
+                                 style="@GetProgressStyle(selectedProfile.Assessment)">
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="metric-card">
+
+                        <span>Assignments Submitted</span>
+
+                        <strong>
+                            @selectedProfile.SubmittedAssignments/@selectedProfile.TotalAssignments
+                        </strong>
+
+                        <small>
+                            @selectedProfile.AssignmentCompletion.ToString("0.0")%
+                            completion
+                        </small>
+
+                    </div>
+
+                    <div class="metric-card">
+
+                        <span>LMS Engagement</span>
+
+                        <strong>@selectedProfile.LmsActivity%</strong>
+
+                        <small>Illustrative activity index</small>
+
+                        <div class="mini-progress">
+                            <div class="progress-fill purple"
+                                 style="@GetProgressStyle(selectedProfile.LmsActivity)">
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- Enrollment Information -->
+                <section class="profile-card">
+
+                    <div class="section-heading">
+                        <div>
+                            <h3>Enrollment Information</h3>
+                            <p>Student information from the shared data service</p>
+                        </div>
+                    </div>
+
+                    <div class="information-grid">
+
+                        <div>
+                            <span>Registration Number</span>
+                            <strong>@selectedProfile.Id</strong>
+                        </div>
+
+                        <div>
+                            <span>Department</span>
+                            <strong>@selectedProfile.Department</strong>
+                        </div>
+
+                        <div>
+                            <span>Programme</span>
+                            <strong>@selectedProfile.Program</strong>
+                        </div>
+
+                        <div>
+                            <span>Academic Semester</span>
+                            <strong>@selectedProfile.Semester</strong>
+                        </div>
+
+                        <div>
+                            <span>Section</span>
+                            <strong>@selectedProfile.Section</strong>
+                        </div>
+
+                        <div>
+                            <span>Assigned Faculty Mentor</span>
+                            <strong>@selectedProfile.Mentor</strong>
+                        </div>
+
+                    </div>
+
+                </section>
+
+                <!-- Course Performance -->
+                <section class="profile-card">
+
+                    <div class="section-heading">
+                        <div>
+                            <h3>Course Performance</h3>
+                            <p>
+                                Subject-level attendance and assessment records
+                            </p>
+                        </div>
+                    </div>
+
+                    @if (selectedProfile.Courses.Count > 0)
+                    {
+                        <div class="table-scroll">
+
+                            <table class="course-table">
+
+                                <thead>
+                                    <tr>
+                                        <th>COURSE</th>
+                                        <th>ATTENDANCE</th>
+                                        <th>ASSESSMENT</th>
+                                        <th>STATUS</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+
+                                    @foreach (var courseRecord in selectedProfile.Courses)
+                                    {
+                                        <tr>
+
+                                            <td>
+                                                <strong>@courseRecord.Name</strong>
+                                                <small>@courseRecord.Code</small>
+                                            </td>
+
+                                            <td>
+                                                <div class="course-metric">
+
+                                                    <span>
+                                                        @courseRecord.Attendance%
+                                                    </span>
+
+                                                    <div class="mini-progress">
+                                                        <div class="progress-fill @(courseRecord.Attendance < 75 ? "danger" : "success")"
+                                                             style="@GetProgressStyle(courseRecord.Attendance)">
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            </td>
+
+                                            <td>@courseRecord.Marks%</td>
+
+                                            <td>
+                                                <span class="course-status @(RequiresCourseReview(courseRecord) ? "attention" : "normal")">
+
+                                                    @(RequiresCourseReview(courseRecord)
+                                                        ? "Review Needed"
+                                                        : "On Track")
+
+                                                </span>
+                                            </td>
+
+                                        </tr>
+                                    }
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="positive-message">
+                            Detailed course records have not yet been
+                            loaded for this student.
+
+                            Overall academic indicators are still available
+                            from the shared service.
+                        </div>
+                    }
+
+                </section>
+
+                <!-- Assignments and Engagement -->
+                <div class="details-grid">
+
+                    <section class="profile-card">
+
+                        <div class="section-heading">
+                            <div>
+                                <h3>Assignment Overview</h3>
+                                <p>Current semester submission summary</p>
+                            </div>
+                        </div>
+
+                        <div class="assignment-summary">
+
+                            <div class="assignment-row">
+                                <span>Submitted</span>
+                                <strong>@selectedProfile.SubmittedAssignments</strong>
+                            </div>
+
+                            <div class="assignment-row">
+                                <span>Not Submitted / Pending</span>
+
+                                <strong>
+                                    @Math.Max(
+                                        0,
+                                        selectedProfile.TotalAssignments -
+                                        selectedProfile.SubmittedAssignments
+                                    )
+                                </strong>
+                            </div>
+
+                            <div class="assignment-row">
+                                <span>Total Assigned</span>
+                                <strong>@selectedProfile.TotalAssignments</strong>
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                    <section class="profile-card">
+
+                        <div class="section-heading">
+                            <div>
+                                <h3>Learning Engagement</h3>
+                                <p>LMS activity and participation</p>
+                            </div>
+                        </div>
+
+                        <div class="engagement-content">
+
+                            <div class="engagement-number">
+                                @selectedProfile.LmsActivity%
+                            </div>
+
+                            <div class="engagement-description">
+                                <strong>LMS Activity Index</strong>
+
+                                <p>
+                                    Engagement information is now read
+                                    from AcademicDataService.
+                                </p>
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                </div>
+
+                <!-- Academic History -->
+                <section class="profile-card">
+
+                    <div class="section-heading">
+                        <div>
+                            <h3>Academic Performance History</h3>
+                            <p>Six-week historical performance records</p>
+                        </div>
+                    </div>
+
+                    @if (HasHistory(selectedProfile))
+                    {
+                        <div class="table-scroll">
+
+                            <table class="course-table">
+
+                                <thead>
+                                    <tr>
+                                        <th>WEEK</th>
+                                        <th>ATTENDANCE</th>
+                                        <th>ASSESSMENT</th>
+                                        <th>CHANGE FROM PREVIOUS WEEK</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+
+                                    @for (int index = 0;
+                                          index < GetHistoryLength(selectedProfile);
+                                          index++)
+                                    {
+                                        int week = index + 1;
+
+                                        int attendance =
+                                            selectedProfile.AttendanceHistory[index];
+
+                                        int assessment =
+                                            selectedProfile.AssessmentHistory[index];
+
+                                        string change =
+                                            index == 0
+                                                ? "Baseline week"
+                                                : GetWeeklyChange(
+                                                    selectedProfile,
+                                                    index
+                                                );
+
+                                        <tr>
+                                            <td>
+                                                <strong>Week @week</strong>
+                                            </td>
+
+                                            <td>@attendance%</td>
+
+                                            <td>@assessment%</td>
+
+                                            <td>@change</td>
+                                        </tr>
+                                    }
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+                    }
+                    else
+                    {
+                        <p>
+                            Historical academic performance
+                            is not yet available.
+                        </p>
+                    }
+
+                </section>
+
+                <!-- Risk Factors -->
+                <section class="profile-card">
+
+                    <div class="section-heading">
+                        <div>
+                            <h3>Academic Risk Factors</h3>
+                            <p>Academic indicators requiring review</p>
+                        </div>
+
+                        <span class="demo-label">
+                            Rule-Based Indicators
+                        </span>
+                    </div>
+
+                    @if (GetRiskFactors(selectedProfile).Any())
+                    {
+                        <div class="factors-list">
+
+                            @foreach (var factor in GetRiskFactors(selectedProfile))
+                            {
+                                <div class="factor-item">
+
+                                    <span class="factor-symbol">!</span>
+
+                                    <div>
+                                        <strong>@factor.Title</strong>
+                                        <p>@factor.Description</p>
+                                    </div>
+
+                                </div>
+                            }
+
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="positive-message">
+                            No academic support indicators are
+                            triggered by the current demonstration rules.
+                        </div>
+                    }
+
+                    <div class="risk-explanation">
+                        These indicators are calculated from shared
+                        academic data using demonstration thresholds.
+
+                        The displayed risk band remains an illustrative
+                        classification until the centralized scoring
+                        engine is implemented.
+                    </div>
+
+                </section>
+
+                <!-- Privacy -->
+                <div class="privacy-note">
+
+                    <strong>Academic Support and Privacy</strong>
+
+                    <p>
+                        Academic records are intended for authorized
+                        mentoring and early intervention only.
+
+                        This prototype does not yet enforce
+                        role-based access to student information.
+                    </p>
+
+                </div>
+
+            }
+            else
+            {
+                <section class="profile-card">
+                    <p>
+                        No student profile is currently selected.
+                    </p>
+                </section>
+            }
+
+        </div>
+
+    </div>
+
+</div>
+
+@code {
+
+    private string SearchText = "";
+    private string SelectedId = "STU001";
+
+    // Shared student records: no duplicate dataset.
+    private IReadOnlyList<Student> StudentRecords =>
+        AcademicData.GetAllStudents();
+
+    private Student? SelectedStudent =>
+        AcademicData.GetStudentById(SelectedId);
+
+    private IEnumerable<Student> FilteredStudents =>
+        StudentRecords.Where(record =>
+            string.IsNullOrWhiteSpace(SearchText) ||
+
+            record.Name.Contains(
+                SearchText,
+                StringComparison.OrdinalIgnoreCase
+            ) ||
+
+            record.Id.Contains(
+                SearchText,
+                StringComparison.OrdinalIgnoreCase
+            ) ||
+
+            record.Department.Contains(
+                SearchText,
+                StringComparison.OrdinalIgnoreCase
+            )
+        );
+
+    private void SelectStudent(string studentId)
+    {
+        SelectedId = studentId;
+    }
+
+    private static string GetInitials(string name)
+    {
+        return string.Concat(
+            name.Split(
+                ' ',
+                StringSplitOptions.RemoveEmptyEntries
+            )
+            .Take(2)
+            .Select(part => part[0])
+        );
+    }
+
+    private static string GetProgressStyle(int value)
+    {
+        int safeValue = Math.Clamp(value, 0, 100);
+
+        return $"width:{safeValue}%";
+    }
+
+    private static bool RequiresCourseReview(
+        CoursePerformance course)
+    {
+        return course.Attendance < 75 ||
+               course.Marks < 50;
+    }
+
+    private static bool HasHistory(Student record)
+    {
+        return GetHistoryLength(record) > 0;
+    }
+
+    private static int GetHistoryLength(Student record)
+    {
+        return Math.Min(
+            record.AttendanceHistory.Count,
+            record.AssessmentHistory.Count
+        );
+    }
+
+    private static string GetWeeklyChange(
+        Student record,
+        int index)
+    {
+        if (index <= 0 ||
+            index >= GetHistoryLength(record))
+        {
+            return "Not available";
+        }
+
+        int attendanceChange =
+            record.AttendanceHistory[index] -
+            record.AttendanceHistory[index - 1];
+
+        int assessmentChange =
+            record.AssessmentHistory[index] -
+            record.AssessmentHistory[index - 1];
+
+        string attendanceText =
+            attendanceChange > 0
+                ? $"+{attendanceChange}"
+                : attendanceChange.ToString();
+
+        string assessmentText =
+            assessmentChange > 0
+                ? $"+{assessmentChange}"
+                : assessmentChange.ToString();
+
+        return $"Attendance: {attendanceText} pts | " +
+               $"Assessment: {assessmentText} pts";
+    }
+
+    private static List<AcademicFactor> GetRiskFactors(
+        Student record)
+    {
+        var factors = new List<AcademicFactor>();
+
+        if (record.Attendance < 75)
+        {
+            factors.Add(new AcademicFactor(
+                "Low Attendance",
+                $"Current recorded attendance is " +
+                $"{record.Attendance}%, below the " +
+                "demonstration review threshold of 75%."
+            ));
+        }
+
+        if (record.Assessment < 60)
+        {
+            factors.Add(new AcademicFactor(
+                "Assessment Performance Concern",
+                $"The current assessment average is " +
+                $"{record.Assessment}%, below the " +
+                "demonstration review threshold of 60%."
+            ));
+        }
+
+        if (record.TotalAssignments > 0 &&
+            record.SubmittedAssignments <
+            record.TotalAssignments)
+        {
+            int outstanding =
+                record.TotalAssignments -
+                record.SubmittedAssignments;
+
+            factors.Add(new AcademicFactor(
+                "Outstanding Assignments",
+                $"{outstanding} of " +
+                $"{record.TotalAssignments} assignments " +
+                "are not recorded as submitted. " +
+                "Submission status should be verified."
+            ));
+        }
+
+        if (record.LmsActivity < 50)
+        {
+            factors.Add(new AcademicFactor(
+                "Low LMS Engagement",
+                $"The demonstration LMS activity " +
+                $"index is {record.LmsActivity}%."
+            ));
+        }
+
+        if (GetHistoryLength(record) >= 2)
+        {
+            int last =
+                record.AttendanceHistory.Count - 1;
+
+            int attendanceChange =
+                record.AttendanceHistory[last] -
+                record.AttendanceHistory[0];
+
+            if (attendanceChange <= -5)
+            {
+                factors.Add(new AcademicFactor(
+                    "Attendance Deterioration",
+                    $"Attendance declined by " +
+                    $"{Math.Abs(attendanceChange)} " +
+                    "percentage points during the " +
+                    "monitoring period."
+                ));
+            }
+
+            int assessmentLast =
+                record.AssessmentHistory.Count - 1;
+
+            int assessmentChange =
+                record.AssessmentHistory[assessmentLast] -
+                record.AssessmentHistory[0];
+
+            if (assessmentChange <= -5)
+            {
+                factors.Add(new AcademicFactor(
+                    "Assessment Deterioration",
+                    $"Assessment performance declined " +
+                    $"by {Math.Abs(assessmentChange)} " +
+                    "percentage points during the " +
+                    "monitoring period."
+                ));
+            }
+        }
+
+        return factors;
+    }
+
+    private sealed record AcademicFactor(
+        string Title,
+        string Description
+    );
+}

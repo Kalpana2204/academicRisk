@@ -1,0 +1,633 @@
+
+@page "/settings"
+@rendermode InteractiveServer
+@using System.Linq
+@using System.Globalization
+
+<PageTitle>Settings | Academic Risk Radar</PageTitle>
+
+<div class="settings-page">
+
+    <div class="settings-heading">
+        <div>
+            <h1>Settings & Administration</h1>
+            <p>
+                Configure academic risk monitoring,
+                review user roles and manage alerts.
+            </p>
+        </div>
+
+        <span class="demo-pill">Demo Configuration</span>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(SaveMessage))
+    {
+        <div class="feedback @(SaveSuccessful ? "success" : "error")"
+             role="status">
+            @SaveMessage
+        </div>
+    }
+
+    <div class="settings-grid">
+
+        <!-- Scoring Weights -->
+        <section class="settings-card">
+            <div class="card-heading">
+                <div>
+                    <h2>Academic Risk Scoring</h2>
+                    <p>
+                        Set the relative importance of each
+                        academic performance indicator.
+                    </p>
+                </div>
+                <span class="section-icon">%</span>
+            </div>
+
+            <div class="weight-controls">
+
+                <div class="weight-control">
+                    <div class="control-heading">
+                        <label for="attendance-weight">Attendance</label>
+                        <strong>@AttendanceWeight%</strong>
+                    </div>
+
+                    <input id="attendance-weight"
+                           type="range"
+                           min="0"
+                           max="100"
+                           step="5"
+                           @bind="AttendanceWeight"
+                           @bind:event="oninput" />
+
+                    <small>Lower attendance increases risk.</small>
+                </div>
+
+                <div class="weight-control">
+                    <div class="control-heading">
+                        <label for="assessment-weight">
+                            Assessment Performance
+                        </label>
+                        <strong>@AssessmentWeight%</strong>
+                    </div>
+
+                    <input id="assessment-weight"
+                           type="range"
+                           min="0"
+                           max="100"
+                           step="5"
+                           @bind="AssessmentWeight"
+                           @bind:event="oninput" />
+
+                    <small>Lower assessment marks increase risk.</small>
+                </div>
+
+                <div class="weight-control">
+                    <div class="control-heading">
+                        <label for="assignment-weight">
+                            Assignment Completion
+                        </label>
+                        <strong>@AssignmentWeight%</strong>
+                    </div>
+
+                    <input id="assignment-weight"
+                           type="range"
+                           min="0"
+                           max="100"
+                           step="5"
+                           @bind="AssignmentWeight"
+                           @bind:event="oninput" />
+
+                    <small>Missing submissions increase risk.</small>
+                </div>
+
+                <div class="weight-control">
+                    <div class="control-heading">
+                        <label for="lms-weight">LMS Engagement</label>
+                        <strong>@LmsWeight%</strong>
+                    </div>
+
+                    <input id="lms-weight"
+                           type="range"
+                           min="0"
+                           max="100"
+                           step="5"
+                           @bind="LmsWeight"
+                           @bind:event="oninput" />
+
+                    <small>Lower engagement increases risk.</small>
+                </div>
+
+            </div>
+
+            <div class="settings-total">
+                <span>Total Weight</span>
+                <strong>@TotalWeight%</strong>
+            </div>
+
+            <p class="field-hint">
+                Saved weights must total exactly 100%.
+                The preview uses normalized weights.
+            </p>
+        </section>
+
+        <!-- Risk Thresholds -->
+        <section class="settings-card">
+            <div class="card-heading">
+                <div>
+                    <h2>Risk Classification Thresholds</h2>
+                    <p>
+                        Define the score boundaries used
+                        to classify academic support needs.
+                    </p>
+                </div>
+                <span class="section-icon">!</span>
+            </div>
+
+            <div class="threshold-list">
+
+                <div class="threshold-item">
+                    <div class="threshold-heading">
+                        <span class="risk-dot low"></span>
+                        <label for="moderate-start">
+                            Moderate Risk Starts At
+                        </label>
+                    </div>
+
+                    <input id="moderate-start"
+                           type="number"
+                           min="1"
+                           max="99"
+                           @bind="ModerateThreshold" />
+
+                    <small>
+                        Scores below this value are Low Risk.
+                    </small>
+                </div>
+
+                <div class="threshold-item">
+                    <div class="threshold-heading">
+                        <span class="risk-dot high"></span>
+                        <label for="high-start">
+                            High Risk Starts At
+                        </label>
+                    </div>
+
+                    <input id="high-start"
+                           type="number"
+                           min="1"
+                           max="100"
+                           @bind="HighThreshold" />
+
+                    <small>
+                        Scores at or above this value are High Risk.
+                    </small>
+                </div>
+
+            </div>
+
+            <div class="threshold-preview">
+                <h3>Current Classification Rules</h3>
+
+                @if (ThresholdsValid)
+                {
+                    <div class="threshold-row">
+                        <span class="risk-label low">Low</span>
+                        <strong>
+                            0 to @(ModerateThreshold - 1)
+                        </strong>
+                    </div>
+
+                    <div class="threshold-row">
+                        <span class="risk-label moderate">Moderate</span>
+                        <strong>
+                            @ModerateThreshold to @(HighThreshold - 1)
+                        </strong>
+                    </div>
+
+                    <div class="threshold-row">
+                        <span class="risk-label high">High</span>
+                        <strong>
+                            @HighThreshold to 100
+                        </strong>
+                    </div>
+                }
+                else
+                {
+                    <p class="invalid-text">
+                        Moderate must be between 1 and 99.
+                        High must be greater than Moderate
+                        and no greater than 100.
+                    </p>
+                }
+            </div>
+
+        </section>
+
+        <!-- Live Model Preview -->
+        <section class="settings-card">
+            <div class="card-heading">
+                <div>
+                    <h2>Scoring Model Preview</h2>
+                    <p>
+                        Preview the configuration using
+                        a synthetic student record.
+                    </p>
+                </div>
+                <span class="section-icon">◈</span>
+            </div>
+
+            <div class="preview-student">
+                <div class="preview-avatar">AS</div>
+                <div>
+                    <strong>Aarav Sharma</strong>
+                    <small>STU001 · Demonstration Student</small>
+                </div>
+            </div>
+
+            <div class="preview-metrics">
+                <div>
+                    <span>Attendance</span>
+                    <strong>61%</strong>
+                </div>
+                <div>
+                    <span>Assessments</span>
+                    <strong>54%</strong>
+                </div>
+                <div>
+                    <span>Assignments</span>
+                    <strong>5 / 9</strong>
+                </div>
+                <div>
+                    <span>LMS Activity</span>
+                    <strong>42%</strong>
+                </div>
+            </div>
+
+            @if (TotalWeight > 0 && ThresholdsValid)
+            {
+                <div class="preview-result">
+                    <div>
+                        <span>Calculated Risk Score</span>
+                        <strong>@PreviewScore.ToString("0.0") / 100</strong>
+                    </div>
+
+                    <span class="risk-label @PreviewRisk.ToLowerInvariant()">
+                        @PreviewRisk Risk
+                    </span>
+                </div>
+
+                <div class="score-track">
+                    <div class="score-fill @PreviewRisk.ToLowerInvariant()"
+                         style="@PreviewScoreWidth">
+                    </div>
+                </div>
+
+                <div class="preview-explanation">
+                    Formula: weighted sum of indicator deficiencies,
+                    divided by the total weight.
+                    A higher value indicates greater academic
+                    support needs in this demo model.
+                </div>
+            }
+            else
+            {
+                <div class="preview-explanation">
+                    Enter valid risk thresholds and at least
+                    one positive scoring weight to calculate
+                    the preview.
+                </div>
+            }
+
+        </section>
+
+        <!-- Notifications -->
+        <section class="settings-card">
+            <div class="card-heading">
+                <div>
+                    <h2>Alert Preferences</h2>
+                    <p>
+                        Choose which academic warning categories
+                        are enabled in the demonstration configuration.
+                    </p>
+                </div>
+                <span class="section-icon">♧</span>
+            </div>
+
+            <div class="preferences-list">
+
+                <label class="preference-row">
+                    <span>
+                        <strong>Attendance Alerts</strong>
+                        <small>
+                            Notify mentors of attendance concerns.
+                        </small>
+                    </span>
+
+                    <input type="checkbox"
+                           @bind="AttendanceAlerts" />
+                </label>
+
+                <label class="preference-row">
+                    <span>
+                        <strong>Assessment Alerts</strong>
+                        <small>
+                            Flag declining academic marks.
+                        </small>
+                    </span>
+
+                    <input type="checkbox"
+                           @bind="AssessmentAlerts" />
+                </label>
+
+                <label class="preference-row">
+                    <span>
+                        <strong>Missing Assignment Alerts</strong>
+                        <small>
+                            Highlight incomplete submissions.
+                        </small>
+                    </span>
+
+                    <input type="checkbox"
+                           @bind="AssignmentAlerts" />
+                </label>
+
+                <label class="preference-row">
+                    <span>
+                        <strong>LMS Engagement Alerts</strong>
+                        <small>
+                            Flag unusually low learning activity.
+                        </small>
+                    </span>
+
+                    <input type="checkbox"
+                           @bind="LmsAlerts" />
+                </label>
+
+            </div>
+
+            <div class="info-note">
+                These preferences are not yet connected
+                to the notification engine.
+                No real email or SMS messages are sent.
+            </div>
+
+        </section>
+
+    </div>
+
+    <!-- Role Administration -->
+    <section class="settings-card roles-card">
+
+        <div class="card-heading">
+            <div>
+                <h2>User Roles & Access Overview</h2>
+                <p>
+                    Planned role-based permissions for
+                    the Academic Risk Radar platform.
+                </p>
+            </div>
+
+            <span class="demo-pill">6 Roles</span>
+        </div>
+
+        <div class="table-scroll">
+            <table class="roles-table">
+                <thead>
+                    <tr>
+                        <th>ROLE</th>
+                        <th>RESPONSIBILITY</th>
+                        <th>PLANNED ACCESS</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach (var role in RoleDefinitions)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@role.Name</strong>
+                            </td>
+
+                            <td>@role.Responsibility</td>
+
+                            <td>@role.Access</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <p class="roles-notice">
+            This is a design preview only.
+            Authentication and authorization are not implemented yet.
+            Actual access restrictions will be enforced on the
+            server when we add ASP.NET Core Identity.
+        </p>
+
+    </section>
+
+    <!-- Actions -->
+    <div class="settings-actions">
+        <button type="button"
+                class="secondary-button"
+                @onclick="ResetDefaults">
+            Reset to Defaults
+        </button>
+
+        <button type="button"
+                class="primary-button"
+                @onclick="SaveSettings">
+            Save Configuration
+        </button>
+    </div>
+
+    <div class="privacy-notice">
+        <strong>Responsible Academic Risk Monitoring</strong>
+        <p>
+            Scoring weights and risk boundaries must be
+            reviewed and approved before deployment.
+            These settings should support transparent
+            academic mentoring, not automated disciplinary
+            decisions. Production updates will require
+            authorization, persistence and an audit trail.
+        </p>
+    </div>
+
+</div>
+
+@code {
+    private int AttendanceWeight = 35;
+    private int AssessmentWeight = 30;
+    private int AssignmentWeight = 20;
+    private int LmsWeight = 15;
+
+    private int ModerateThreshold = 30;
+    private int HighThreshold = 60;
+
+    private bool AttendanceAlerts = true;
+    private bool AssessmentAlerts = true;
+    private bool AssignmentAlerts = true;
+    private bool LmsAlerts = false;
+
+    private string SaveMessage = "";
+    private bool SaveSuccessful = false;
+
+    private int TotalWeight =>
+        AttendanceWeight +
+        AssessmentWeight +
+        AssignmentWeight +
+        LmsWeight;
+
+    private bool ThresholdsValid =>
+        ModerateThreshold >= 1 &&
+        ModerateThreshold < HighThreshold &&
+        HighThreshold <= 100;
+
+    private double PreviewScore
+    {
+        get
+        {
+            if (TotalWeight <= 0)
+            {
+                return 0;
+            }
+
+            const double attendanceRisk = 39;
+            const double assessmentRisk = 46;
+            const double assignmentRisk = 100.0 * 4 / 9;
+            const double lmsRisk = 58;
+
+            double weighted =
+                attendanceRisk * AttendanceWeight +
+                assessmentRisk * AssessmentWeight +
+                assignmentRisk * AssignmentWeight +
+                lmsRisk * LmsWeight;
+
+            return weighted / TotalWeight;
+        }
+    }
+
+    private string PreviewRisk
+    {
+        get
+        {
+            if (PreviewScore >= HighThreshold)
+            {
+                return "High";
+            }
+
+            if (PreviewScore >= ModerateThreshold)
+            {
+                return "Moderate";
+            }
+
+            return "Low";
+        }
+    }
+
+    private string PreviewScoreWidth =>
+        "width:" +
+        Math.Clamp(PreviewScore, 0, 100)
+            .ToString("0.##", CultureInfo.InvariantCulture) +
+        "%;";
+
+    private void SaveSettings()
+    {
+        SaveSuccessful = false;
+
+        if (AttendanceWeight < 0 ||
+            AssessmentWeight < 0 ||
+            AssignmentWeight < 0 ||
+            LmsWeight < 0 ||
+            AttendanceWeight > 100 ||
+            AssessmentWeight > 100 ||
+            AssignmentWeight > 100 ||
+            LmsWeight > 100 ||
+            TotalWeight != 100)
+        {
+            SaveMessage =
+                "Scoring weights must each be between " +
+                "0 and 100 and total exactly 100%.";
+            return;
+        }
+
+        if (!ThresholdsValid)
+        {
+            SaveMessage =
+                "Invalid thresholds. Moderate must be " +
+                "between 1 and 99, and High must be " +
+                "greater than Moderate and at most 100.";
+            return;
+        }
+
+        SaveSuccessful = true;
+
+        SaveMessage =
+            "Configuration validated for this session. " +
+            "Database persistence is not implemented yet.";
+    }
+
+    private void ResetDefaults()
+    {
+        AttendanceWeight = 35;
+        AssessmentWeight = 30;
+        AssignmentWeight = 20;
+        LmsWeight = 15;
+
+        ModerateThreshold = 30;
+        HighThreshold = 60;
+
+        AttendanceAlerts = true;
+        AssessmentAlerts = true;
+        AssignmentAlerts = true;
+        LmsAlerts = false;
+
+        SaveSuccessful = true;
+        SaveMessage = "Default configuration restored.";
+    }
+
+    private sealed record RoleDefinition(
+        string Name,
+        string Responsibility,
+        string Access
+    );
+
+    private static readonly List<RoleDefinition> RoleDefinitions = new()
+    {
+        new(
+            "Student",
+            "Review personal academic progress.",
+            "Own academic profile and authorized support information."
+        ),
+
+        new(
+            "Course Instructor",
+            "Monitor performance in assigned courses.",
+            "Students enrolled in assigned courses."
+        ),
+
+        new(
+            "Faculty Mentor",
+            "Review risks and coordinate mentoring.",
+            "Assigned mentees, relevant alerts and interventions."
+        ),
+
+        new(
+            "Head of Department",
+            "Monitor departmental academic support.",
+            "Authorized department-level analytics and cases."
+        ),
+
+        new(
+            "Dean of Academics",
+            "Review institution-level academic patterns.",
+            "Institution-level reporting and permitted aggregates."
+        ),
+
+        new(
+            "System Administrator",
+            "Manage accounts and platform configuration.",
+            "System administration and authorized configuration."
+        )
+    };
+}

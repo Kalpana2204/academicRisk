@@ -1,0 +1,890 @@
+
+@page "/trend-detection"
+@rendermode InteractiveServer
+@using System.Linq
+@using System.Globalization
+@using AcademicRiskRadar.Web.Services
+@inject AcademicDataService AcademicData
+
+<PageTitle>Trend Detection | Academic Risk Radar</PageTitle>
+
+<div class="trend-page">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <div>
+            <h1>Academic Trend Detection</h1>
+            <p>
+                Track student performance changes and identify
+                early signs of academic deterioration.
+            </p>
+        </div>
+
+        <span class="demo-tag">
+            Shared Academic History
+        </span>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+
+        <div class="summary-card">
+            <span>Students Monitored</span>
+
+            <strong>@StudentRecords.Count</strong>
+
+            <small>Centralized academic records</small>
+        </div>
+
+        <div class="summary-card">
+            <span>Attendance Declining</span>
+
+            <strong class="red">
+                @AttendanceDecliningCount
+            </strong>
+
+            <small>Decline of at least 5 points</small>
+        </div>
+
+        <div class="summary-card">
+            <span>Assessment Declining</span>
+
+            <strong class="amber">
+                @AssessmentDecliningCount
+            </strong>
+
+            <small>Decline of at least 5 points</small>
+        </div>
+
+        <div class="summary-card">
+            <span>Stable / Improving</span>
+
+            <strong class="green">
+                @StableCount
+            </strong>
+
+            <small>No significant decline detected</small>
+        </div>
+
+    </div>
+
+    <!-- Individual Student Trends -->
+    <section class="trend-panel">
+
+        <div class="panel-heading">
+
+            <div>
+                <h2>Student Performance Timeline</h2>
+
+                <p>
+                    Select a student to explore their
+                    academic performance history.
+                </p>
+            </div>
+
+            <select class="student-select"
+                    aria-label="Select student"
+                    @bind="SelectedStudentId">
+
+                @foreach (var studentOption in StudentRecords)
+                {
+                    <option value="@studentOption.Id">
+                        @studentOption.Name
+                        (@studentOption.Id)
+                    </option>
+                }
+
+            </select>
+
+        </div>
+
+        @if (SelectedStudent is { } selectedRecord)
+        {
+            <!-- Student Identity -->
+            <div class="student-info">
+
+                <div class="student-avatar">
+                    @GetInitials(selectedRecord.Name)
+                </div>
+
+                <div>
+                    <h3>@selectedRecord.Name</h3>
+
+                    <p>
+                        @selectedRecord.Id ·
+                        @selectedRecord.Department
+                    </p>
+                </div>
+
+                <span class="trend-status @GetStatusClass(selectedRecord)">
+                    @GetOverallStatus(selectedRecord)
+                </span>
+
+            </div>
+
+            @if (HasHistory(selectedRecord))
+            {
+                <!-- Trend Metrics -->
+                <div class="metric-overview">
+
+                    <div class="overview-item">
+
+                        <span>Latest Attendance</span>
+
+                        <strong>
+                            @selectedRecord.AttendanceHistory.Last()%
+                        </strong>
+
+                        <small class="@GetChangeClass(GetAttendanceChange(selectedRecord))">
+                            @FormatChange(GetAttendanceChange(selectedRecord))
+                            points vs Week 1
+                        </small>
+
+                    </div>
+
+                    <div class="overview-item">
+
+                        <span>Latest Assessment</span>
+
+                        <strong>
+                            @selectedRecord.AssessmentHistory.Last()%
+                        </strong>
+
+                        <small class="@GetChangeClass(GetAssessmentChange(selectedRecord))">
+                            @FormatChange(GetAssessmentChange(selectedRecord))
+                            points vs Week 1
+                        </small>
+
+                    </div>
+
+                    <div class="overview-item">
+
+                        <span>Attendance Trend</span>
+
+                        <strong class="status-text @GetChangeClass(GetAttendanceChange(selectedRecord))">
+                            @GetTrendLabel(GetAttendanceChange(selectedRecord))
+                        </strong>
+
+                        <small>Change across the monitoring period</small>
+
+                    </div>
+
+                    <div class="overview-item">
+
+                        <span>Assessment Trend</span>
+
+                        <strong class="status-text @GetChangeClass(GetAssessmentChange(selectedRecord))">
+                            @GetTrendLabel(GetAssessmentChange(selectedRecord))
+                        </strong>
+
+                        <small>Change across the monitoring period</small>
+
+                    </div>
+
+                </div>
+
+                <!-- Performance Charts -->
+                <div class="charts-grid">
+
+                    <!-- Attendance Chart -->
+                    <section class="chart-card">
+
+                        <div class="chart-heading">
+
+                            <h3>Attendance Trend</h3>
+
+                            <span class="chart-label blue-label">
+                                Attendance %
+                            </span>
+
+                        </div>
+
+                        <div class="chart-area">
+
+                            <div class="chart-bars">
+
+                                @for (int index = 0;
+                                      index < selectedRecord.AttendanceHistory.Count;
+                                      index++)
+                                {
+                                    int week = index + 1;
+
+                                    int value =
+                                        selectedRecord.AttendanceHistory[index];
+
+                                    <div class="bar-column">
+
+                                        <span class="bar-value">
+                                            @value%
+                                        </span>
+
+                                        <div class="bar-track">
+
+                                            <div class="bar-fill attendance-bar"
+                                                 style="@GetBarHeight(value)">
+                                            </div>
+
+                                        </div>
+
+                                        <span class="week-label">
+                                            W@week
+                                        </span>
+
+                                    </div>
+                                }
+
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                    <!-- Assessment Chart -->
+                    <section class="chart-card">
+
+                        <div class="chart-heading">
+
+                            <h3>Assessment Trend</h3>
+
+                            <span class="chart-label purple-label">
+                                Assessment %
+                            </span>
+
+                        </div>
+
+                        <div class="chart-area">
+
+                            <div class="chart-bars">
+
+                                @for (int index = 0;
+                                      index < selectedRecord.AssessmentHistory.Count;
+                                      index++)
+                                {
+                                    int week = index + 1;
+
+                                    int value =
+                                        selectedRecord.AssessmentHistory[index];
+
+                                    <div class="bar-column">
+
+                                        <span class="bar-value">
+                                            @value%
+                                        </span>
+
+                                        <div class="bar-track">
+
+                                            <div class="bar-fill assessment-bar"
+                                                 style="@GetBarHeight(value)">
+                                            </div>
+
+                                        </div>
+
+                                        <span class="week-label">
+                                            W@week
+                                        </span>
+
+                                    </div>
+                                }
+
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                </div>
+
+                <!-- Academic History Table -->
+                <div class="detection-section">
+
+                    <div class="section-heading">
+
+                        <h3>Historical Academic Records</h3>
+
+                        <p>
+                            Weekly performance obtained from
+                            AcademicDataService.
+                        </p>
+
+                    </div>
+
+                    <div class="table-scroll">
+
+                        <table class="trend-table">
+
+                            <thead>
+                                <tr>
+                                    <th>WEEK</th>
+                                    <th>ATTENDANCE</th>
+                                    <th>ASSESSMENT</th>
+                                    <th>ATTENDANCE CHANGE</th>
+                                    <th>ASSESSMENT CHANGE</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                @for (int index = 0;
+                                      index < GetHistoryLength(selectedRecord);
+                                      index++)
+                                {
+                                    int week = index + 1;
+
+                                    int attendance =
+                                        selectedRecord.AttendanceHistory[index];
+
+                                    int assessment =
+                                        selectedRecord.AssessmentHistory[index];
+
+                                    int attendanceChange =
+                                        index == 0
+                                            ? 0
+                                            : attendance -
+                                              selectedRecord.AttendanceHistory[index - 1];
+
+                                    int assessmentChange =
+                                        index == 0
+                                            ? 0
+                                            : assessment -
+                                              selectedRecord.AssessmentHistory[index - 1];
+
+                                    <tr>
+
+                                        <td>
+                                            <strong>Week @week</strong>
+                                        </td>
+
+                                        <td>@attendance%</td>
+
+                                        <td>@assessment%</td>
+
+                                        <td>
+                                            @if (index == 0)
+                                            {
+                                                <span>Baseline</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="@GetChangeClass(attendanceChange)">
+                                                    @FormatChange(attendanceChange)
+                                                    pts
+                                                </span>
+                                            }
+                                        </td>
+
+                                        <td>
+                                            @if (index == 0)
+                                            {
+                                                <span>Baseline</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="@GetChangeClass(assessmentChange)">
+                                                    @FormatChange(assessmentChange)
+                                                    pts
+                                                </span>
+                                            }
+                                        </td>
+
+                                    </tr>
+                                }
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+                <!-- Deterioration Detection -->
+                <section class="detection-section">
+
+                    <div class="section-heading">
+
+                        <h3>Deterioration Analysis</h3>
+
+                        <p>
+                            Academic indicators calculated from
+                            shared historical records.
+                        </p>
+
+                    </div>
+
+                    @if (GetWarnings(selectedRecord).Any())
+                    {
+                        @foreach (var warningRecord in GetWarnings(selectedRecord))
+                        {
+                            <div class="warning-item">
+
+                                <div class="warning-icon">
+                                    !
+                                </div>
+
+                                <div>
+                                    <strong>
+                                        @warningRecord.Title
+                                    </strong>
+
+                                    <p>
+                                        @warningRecord.Description
+                                    </p>
+                                </div>
+
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="positive-message">
+
+                            <strong>
+                                No significant deterioration detected
+                            </strong>
+
+                            <p>
+                                Attendance and assessment indicators
+                                have remained relatively stable or
+                                improved during the monitoring period.
+                            </p>
+
+                        </div>
+                    }
+
+                </section>
+            }
+            else
+            {
+                <div class="positive-message">
+
+                    <strong>
+                        Academic history unavailable
+                    </strong>
+
+                    <p>
+                        This student does not currently have
+                        sufficient paired attendance and
+                        assessment records for trend analysis.
+                    </p>
+
+                </div>
+            }
+        }
+
+    </section>
+
+    <!-- Student Comparison -->
+    <section class="trend-panel comparison-panel">
+
+        <div class="panel-heading">
+
+            <div>
+                <h2>Student Trend Comparison</h2>
+
+                <p>
+                    Compare academic performance trends
+                    across all monitored students.
+                </p>
+            </div>
+
+            <select class="student-select"
+                    aria-label="Filter student trends"
+                    @bind="SelectedFilter">
+
+                <option value="All">
+                    All Students
+                </option>
+
+                <option value="Declining">
+                    Declining
+                </option>
+
+                <option value="Stable">
+                    Stable / Improving
+                </option>
+
+                <option value="Unavailable">
+                    History Unavailable
+                </option>
+
+            </select>
+
+        </div>
+
+        <div class="table-scroll">
+
+            <table class="trend-table">
+
+                <thead>
+                    <tr>
+                        <th>STUDENT</th>
+                        <th>ATTENDANCE CHANGE</th>
+                        <th>ASSESSMENT CHANGE</th>
+                        <th>OVERALL TREND</th>
+                        <th>ACTION</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var comparisonRecord in FilteredStudents)
+                    {
+                        <tr>
+
+                            <td>
+                                <strong>
+                                    @comparisonRecord.Name
+                                </strong>
+
+                                <small>
+                                    @comparisonRecord.Id ·
+                                    @comparisonRecord.Department
+                                </small>
+                            </td>
+
+                            <td>
+                                @if (HasHistory(comparisonRecord))
+                                {
+                                    <span class="@GetChangeClass(GetAttendanceChange(comparisonRecord))">
+                                        @FormatChange(GetAttendanceChange(comparisonRecord))
+                                        pts
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span>—</span>
+                                }
+                            </td>
+
+                            <td>
+                                @if (HasHistory(comparisonRecord))
+                                {
+                                    <span class="@GetChangeClass(GetAssessmentChange(comparisonRecord))">
+                                        @FormatChange(GetAssessmentChange(comparisonRecord))
+                                        pts
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span>—</span>
+                                }
+                            </td>
+
+                            <td>
+                                <span class="trend-status @GetStatusClass(comparisonRecord)">
+                                    @GetOverallStatus(comparisonRecord)
+                                </span>
+                            </td>
+
+                            <td>
+                                <button type="button"
+                                        class="analyse-button"
+                                        @onclick="() => SelectStudent(comparisonRecord.Id)">
+
+                                    View Trend
+
+                                </button>
+                            </td>
+
+                        </tr>
+                    }
+
+                    @if (!FilteredStudents.Any())
+                    {
+                        <tr>
+                            <td colspan="5"
+                                class="empty-state">
+                                No matching student records.
+                            </td>
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+    <!-- Responsible Use -->
+    <div class="disclaimer">
+
+        <strong>
+            Academic Trend Monitoring Notice
+        </strong>
+
+        <p>
+            This module uses synthetic academic history from
+            the centralized student data service.
+
+            A deterioration warning is triggered when the
+            latest value is at least five percentage points
+            below the earliest available value.
+
+            These thresholds are illustrative and should
+            not be treated as validated predictions.
+
+            Real academic interventions require verified
+            records and faculty review.
+        </p>
+
+    </div>
+
+</div>
+
+@code {
+
+    private string SelectedStudentId = "STU001";
+    private string SelectedFilter = "All";
+
+    // Shared academic student records
+    private IReadOnlyList<Student> StudentRecords =>
+        AcademicData.GetAllStudents();
+
+    // Currently selected student
+    private Student? SelectedStudent =>
+        AcademicData.GetStudentById(SelectedStudentId);
+
+    // Summary counts
+    private int AttendanceDecliningCount =>
+        StudentRecords.Count(record =>
+            HasHistory(record) &&
+            GetAttendanceChange(record) <= -5
+        );
+
+    private int AssessmentDecliningCount =>
+        StudentRecords.Count(record =>
+            HasHistory(record) &&
+            GetAssessmentChange(record) <= -5
+        );
+
+    private int StableCount =>
+        StudentRecords.Count(record =>
+            HasHistory(record) &&
+            !IsDeclining(record)
+        );
+
+    // Student comparison filters
+    private IEnumerable<Student> FilteredStudents =>
+        StudentRecords.Where(record =>
+            SelectedFilter == "All" ||
+
+            (
+                SelectedFilter == "Declining" &&
+                HasHistory(record) &&
+                IsDeclining(record)
+            ) ||
+
+            (
+                SelectedFilter == "Stable" &&
+                HasHistory(record) &&
+                !IsDeclining(record)
+            ) ||
+
+            (
+                SelectedFilter == "Unavailable" &&
+                !HasHistory(record)
+            )
+        );
+
+    private void SelectStudent(string studentId)
+    {
+        SelectedStudentId = studentId;
+    }
+
+    private static int GetHistoryLength(Student record)
+    {
+        return Math.Min(
+            record.AttendanceHistory.Count,
+            record.AssessmentHistory.Count
+        );
+    }
+
+    private static bool HasHistory(Student record)
+    {
+        return GetHistoryLength(record) >= 2;
+    }
+
+    private static int GetAttendanceChange(Student record)
+    {
+        if (!HasHistory(record))
+        {
+            return 0;
+        }
+
+        int lastIndex = GetHistoryLength(record) - 1;
+
+        return record.AttendanceHistory[lastIndex] -
+               record.AttendanceHistory[0];
+    }
+
+    private static int GetAssessmentChange(Student record)
+    {
+        if (!HasHistory(record))
+        {
+            return 0;
+        }
+
+        int lastIndex = GetHistoryLength(record) - 1;
+
+        return record.AssessmentHistory[lastIndex] -
+               record.AssessmentHistory[0];
+    }
+
+    private static bool IsDeclining(Student record)
+    {
+        if (!HasHistory(record))
+        {
+            return false;
+        }
+
+        return GetAttendanceChange(record) <= -5 ||
+               GetAssessmentChange(record) <= -5;
+    }
+
+    private static string GetOverallStatus(Student record)
+    {
+        if (!HasHistory(record))
+        {
+            return "Unavailable";
+        }
+
+        return IsDeclining(record)
+            ? "Declining"
+            : "Stable / Improving";
+    }
+
+    private static string GetStatusClass(Student record)
+    {
+        if (!HasHistory(record))
+        {
+            return "neutral";
+        }
+
+        return IsDeclining(record)
+            ? "declining"
+            : "stable";
+    }
+
+    private static string GetChangeClass(int change)
+    {
+        if (change <= -5)
+        {
+            return "negative";
+        }
+
+        if (change >= 5)
+        {
+            return "positive";
+        }
+
+        return "neutral";
+    }
+
+    private static string GetTrendLabel(int change)
+    {
+        if (change <= -5)
+        {
+            return "Declining";
+        }
+
+        if (change >= 5)
+        {
+            return "Improving";
+        }
+
+        return "Stable";
+    }
+
+    private static string FormatChange(int change)
+    {
+        return change > 0
+            ? $"+{change}"
+            : change.ToString();
+    }
+
+    private static string GetBarHeight(int value)
+    {
+        int safeValue = Math.Clamp(value, 0, 100);
+
+        return "height:" +
+            safeValue.ToString(
+                CultureInfo.InvariantCulture
+            ) + "%;";
+    }
+
+    private static string GetInitials(string name)
+    {
+        return string.Concat(
+            name.Split(
+                ' ',
+                StringSplitOptions.RemoveEmptyEntries
+            )
+            .Take(2)
+            .Select(part => part[0])
+        );
+    }
+
+    private static List<TrendWarning> GetWarnings(Student record)
+    {
+        var warnings = new List<TrendWarning>();
+
+        if (!HasHistory(record))
+        {
+            return warnings;
+        }
+
+        int attendanceChange =
+            GetAttendanceChange(record);
+
+        int assessmentChange =
+            GetAssessmentChange(record);
+
+        int latestAttendance =
+            record.AttendanceHistory[GetHistoryLength(record) - 1];
+
+        // Attendance deterioration
+        if (attendanceChange <= -5)
+        {
+            warnings.Add(new TrendWarning(
+                "Attendance Deterioration",
+                $"Attendance declined by " +
+                $"{Math.Abs(attendanceChange)} percentage points " +
+                "between the earliest and latest monitoring records. " +
+                "Review attendance patterns with the student."
+            ));
+        }
+
+        // Assessment deterioration
+        if (assessmentChange <= -5)
+        {
+            warnings.Add(new TrendWarning(
+                "Assessment Performance Decline",
+                $"Assessment performance declined by " +
+                $"{Math.Abs(assessmentChange)} percentage points " +
+                "during the monitoring period. " +
+                "Review recent assessments and learning difficulties."
+            ));
+        }
+
+        // Current attendance concern
+        if (latestAttendance < 75)
+        {
+            warnings.Add(new TrendWarning(
+                "Low Current Attendance",
+                $"Latest recorded attendance is " +
+                $"{latestAttendance}%. " +
+                "Faculty should review attendance records " +
+                "and identify appropriate academic support."
+            ));
+        }
+
+        return warnings;
+    }
+
+    private sealed record TrendWarning(
+        string Title,
+        string Description
+    );
+}

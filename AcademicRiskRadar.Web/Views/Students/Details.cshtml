@@ -1,0 +1,194 @@
+@model AcademicRiskRadar.Web.Models.StudentEntity
+
+@{
+    ViewData["Title"] = $"Student Profile: {Model.Name}";
+    var riskBadgeClass = Model.Risk switch
+    {
+        RiskLevel.Critical => "bg-danger",
+        RiskLevel.High => "bg-warning text-dark",
+        RiskLevel.Moderate => "bg-primary",
+        _ => "bg-success"
+    };
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1">
+                <li class="breadcrumb-item"><a asp-action="Index">Students</a></li>
+                <li class="breadcrumb-item active" aria-current="page">@Model.StudentCode</li>
+            </ol>
+        </nav>
+        <h2 class="fw-bold mb-0">@Model.Name</h2>
+        <span class="text-muted">@Model.Program | Section @Model.Section</span>
+    </div>
+    <div class="mt-2 mt-md-0 d-flex gap-2">
+        <a asp-controller="RiskAnalysis" asp-action="LogIntervention" asp-route-studentId="@Model.Id" class="btn btn-warning fw-bold text-dark">
+            + Schedule Intervention
+        </a>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+            Edit Records
+        </a>
+        <a asp-action="Index" class="btn btn-outline-dark">
+            Back to Directory
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Student Details & Risk Summary -->
+    <div class="col-md-4">
+        <div class="card card-shadow p-4 mb-4 text-center">
+            <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mx-auto mb-3" style="width: 72px; height: 72px; font-size: 1.8rem; font-weight: 700;">
+                @Model.Name.Substring(0, 1)
+            </div>
+            <h4 class="fw-bold mb-1">@Model.Name</h4>
+            <div class="text-muted small mb-3">@Model.Email</div>
+
+            <div class="p-3 rounded mb-3 bg-light text-start">
+                <div class="d-flex justify-content-between py-1 border-bottom">
+                    <span class="text-muted">Student Code:</span>
+                    <strong>@Model.StudentCode</strong>
+                </div>
+                <div class="d-flex justify-content-between py-1 border-bottom">
+                    <span class="text-muted">Department:</span>
+                    <strong>@Model.Department</strong>
+                </div>
+                <div class="d-flex justify-content-between py-1 border-bottom">
+                    <span class="text-muted">Semester:</span>
+                    <strong>Semester @Model.Semester</strong>
+                </div>
+                <div class="d-flex justify-content-between py-1 border-bottom">
+                    <span class="text-muted">Class Section:</span>
+                    <strong>Section @Model.Section</strong>
+                </div>
+                <div class="d-flex justify-content-between py-1">
+                    <span class="text-muted">Faculty Mentor:</span>
+                    <strong>@Model.MentorName</strong>
+                </div>
+            </div>
+
+            <!-- Risk Score Display -->
+            <div class="p-3 border rounded text-start">
+                <div class="text-muted small text-uppercase fw-bold">Computed Risk Verdict</div>
+                <div class="d-flex justify-content-between align-items-center mt-2">
+                    <span class="badge @riskBadgeClass fs-5">@Model.Risk Level</span>
+                    <span class="display-6 fw-bold">@Model.ComputedRiskScore.ToString("F1")%</span>
+                </div>
+                <p class="text-muted small mt-2 mb-0">
+                    <em>@ViewBag.EvaluationReason</em>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Academic Indicators & Courses -->
+    <div class="col-md-8">
+        <!-- 4 Key Performance Metrics -->
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-shadow p-3 text-center">
+                    <div class="text-muted small">Attendance Rate</div>
+                    <div class="fs-3 fw-bold @(Model.AttendanceRate < 75 ? "text-danger" : "text-success")">
+                        @Model.AttendanceRate.ToString("F1")%
+                    </div>
+                    <div class="small text-muted">Min: 75% required</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-shadow p-3 text-center">
+                    <div class="text-muted small">Assessment Score</div>
+                    <div class="fs-3 fw-bold @(Model.AssessmentScore < 60 ? "text-danger" : "text-dark")">
+                        @Model.AssessmentScore.ToString("F1")%
+                    </div>
+                    <div class="small text-muted">Internal benchmark</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-shadow p-3 text-center">
+                    <div class="text-muted small">Assignments</div>
+                    <div class="fs-3 fw-bold text-primary">
+                        @Model.SubmittedAssignments / @Model.TotalAssignments
+                    </div>
+                    <div class="small text-muted">@Model.AssignmentCompletionPercentage.ToString("F0")% submitted</div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-3">
+                <div class="card card-shadow p-3 text-center">
+                    <div class="text-muted small">LMS Engagement</div>
+                    <div class="fs-3 fw-bold text-info">
+                        @Model.LmsActivityHours.ToString("F1") hrs
+                    </div>
+                    <div class="small text-muted">Portal logins</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enrolled Courses -->
+        <div class="card card-shadow p-4 mb-4">
+            <h5 class="fw-bold mb-3">Enrolled Course Performance</h5>
+            @if (Model.Courses.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Code</th>
+                                <th>Course Title</th>
+                                <th>Credits</th>
+                                <th>Attendance</th>
+                                <th>Marks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in Model.Courses)
+                            {
+                                <tr>
+                                    <td><span class="badge bg-secondary">@c.CourseCode</span></td>
+                                    <td>@c.CourseName</td>
+                                    <td>@c.Credits</td>
+                                    <td>
+                                        <span class="@(c.AttendanceRate < 75 ? "text-danger fw-bold" : "text-success")">
+                                            @c.AttendanceRate%
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="@(c.MarksObtained < 50 ? "text-danger fw-bold" : "text-dark")">
+                                            @c.MarksObtained%
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0 small">No course enrollments currently recorded for this student.</p>
+            }
+        </div>
+
+        <!-- Attendance History -->
+        <div class="card card-shadow p-4 mb-4">
+            <h5 class="fw-bold mb-3">Bi-Weekly Attendance Trend</h5>
+            @if (Model.AttendanceHistory != null && Model.AttendanceHistory.Length > 0)
+            {
+                <div class="d-flex align-items-center gap-2">
+                    @for (int i = 0; i < Model.AttendanceHistory.Length; i++)
+                    {
+                        var val = Model.AttendanceHistory[i];
+                        <div class="text-center p-2 rounded bg-light border flex-fill">
+                            <div class="small text-muted">Wk @((i + 1) * 2)</div>
+                            <div class="fw-bold @(val < 75 ? "text-danger" : "text-success")">@val%</div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0 small">No historical attendance checkpoints recorded.</p>
+            }
+        </div>
+    </div>
+</div>

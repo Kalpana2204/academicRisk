@@ -1,0 +1,135 @@
+@model AcademicRiskRadar.Web.Models.ViewModels.StudentViewModel
+
+@{
+    ViewData["Title"] = "Register New Student";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h2 class="fw-bold mb-0">Register New Student</h2>
+                <p class="text-muted small">Institutional Onboarding &bull; Validated Registration Pipeline</p>
+            </div>
+            <a asp-action="Index" class="btn btn-outline-secondary btn-sm">&larr; Back to Student Directory</a>
+        </div>
+
+        <div class="card card-shadow p-4">
+            <!-- Unit III: ASP.NET Core Form with Server & Client Validation -->
+            <form asp-action="Create" method="post" id="studentForm">
+                @Html.AntiForgeryToken()
+
+                <!-- Validation Summary (Server-side validation aggregate) -->
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label asp-for="StudentCode" class="form-label fw-bold"></label>
+                        <input asp-for="StudentCode" class="form-control" placeholder="e.g. CSE-2026-101" />
+                        <span asp-validation-for="StudentCode" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Name" class="form-label fw-bold"></label>
+                        <input asp-for="Name" class="form-control" placeholder="Student Full Name" />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Email" class="form-label fw-bold"></label>
+                        <input asp-for="Email" class="form-control" type="email" placeholder="student@academicradar.edu" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Department" class="form-label fw-bold"></label>
+                        <select asp-for="Department" class="form-select">
+                            @foreach (var dept in (string[])ViewBag.Departments)
+                            {
+                                <option value="@dept">@dept</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Department" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Program" class="form-label fw-bold"></label>
+                        <input asp-for="Program" class="form-control" placeholder="e.g. B.Tech Computer Science" />
+                        <span asp-validation-for="Program" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="Semester" class="form-label fw-bold"></label>
+                        <input asp-for="Semester" class="form-control" type="number" min="1" max="8" />
+                        <span asp-validation-for="Semester" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="Section" class="form-label fw-bold"></label>
+                        <input asp-for="Section" class="form-control" maxlength="2" />
+                        <span asp-validation-for="Section" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label asp-for="MentorName" class="form-label fw-bold"></label>
+                        <input asp-for="MentorName" class="form-control" placeholder="Assigned Mentor Name" />
+                        <span asp-validation-for="MentorName" class="text-danger small"></span>
+                    </div>
+
+                    <hr class="my-3 text-muted" />
+                    <h5 class="fw-bold mb-2">Initial Academic Indicators</h5>
+
+                    <div class="col-md-6">
+                        <label asp-for="AttendanceRate" class="form-label fw-bold"></label>
+                        <div class="input-group">
+                            <input asp-for="AttendanceRate" class="form-control" type="number" step="0.1" min="0" max="100" />
+                            <span class="input-group-text">%</span>
+                        </div>
+                        <span asp-validation-for="AttendanceRate" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="AssessmentScore" class="form-label fw-bold"></label>
+                        <div class="input-group">
+                            <input asp-for="AssessmentScore" class="form-control" type="number" step="0.1" min="0" max="100" />
+                            <span class="input-group-text">/ 100</span>
+                        </div>
+                        <span asp-validation-for="AssessmentScore" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="SubmittedAssignments" class="form-label fw-bold"></label>
+                        <input asp-for="SubmittedAssignments" class="form-control" type="number" min="0" max="50" />
+                        <span asp-validation-for="SubmittedAssignments" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="TotalAssignments" class="form-label fw-bold"></label>
+                        <input asp-for="TotalAssignments" class="form-control" type="number" min="1" max="50" />
+                        <span asp-validation-for="TotalAssignments" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="LmsActivityHours" class="form-label fw-bold"></label>
+                        <div class="input-group">
+                            <input asp-for="LmsActivityHours" class="form-control" type="number" step="0.5" min="0" />
+                            <span class="input-group-text">hrs</span>
+                        </div>
+                        <span asp-validation-for="LmsActivityHours" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mt-4 d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary fw-bold px-4">
+                        Register Student & Calculate Initial Risk &rarr;
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

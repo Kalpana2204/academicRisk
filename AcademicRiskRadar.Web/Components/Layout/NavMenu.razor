@@ -1,0 +1,81 @@
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">AcademicRiskRadar</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="nav flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Radar Dashboard
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="student-profiles">
+                <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Student Profiles
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="risk-analysis">
+                <span class="bi bi-graph-up-nav-menu" aria-hidden="true"></span> Predictive Risk
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="alerts-inbox">
+                <span class="bi bi-bell-fill-nav-menu" aria-hidden="true"></span> Alerts Inbox
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="interventions">
+                <span class="bi bi-heart-pulse-fill-nav-menu" aria-hidden="true"></span> Mentoring Interventions
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="reports">
+                <span class="bi bi-file-earmark-bar-graph-fill-nav-menu" aria-hidden="true"></span> Analytics Reports
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3 mt-3">
+            <div class="text-uppercase text-light small fw-bold px-3 opacity-75">Platform Services</div>
+        </div>
+
+        <div class="nav-item px-3">
+            <a class="nav-link text-white" href="/Students">
+                <span class="bi bi-folder-fill-nav-menu" aria-hidden="true"></span> 📋 Student Directory
+            </a>
+        </div>
+
+        <div class="nav-item px-3">
+            <a class="nav-link text-white" href="/RiskAnalysis">
+                <span class="bi bi-cpu-fill-nav-menu" aria-hidden="true"></span> ⚡ Risk Scoring Engine
+            </a>
+        </div>
+
+        <div class="nav-item px-3">
+            <a class="nav-link text-white" href="/SqlExplorer">
+                <span class="bi bi-database-fill-nav-menu" aria-hidden="true"></span> 🗄️ Database Studio &amp; SQL
+            </a>
+        </div>
+
+        <div class="nav-item px-3">
+            <a class="nav-link text-info fw-bold" href="/Curriculum">
+                <span class="bi bi-book-fill-nav-menu" aria-hidden="true"></span> 🏛️ Platform Architecture
+            </a>
+        </div>
+
+        <div class="nav-item px-3">
+            <a class="nav-link text-warning" href="/api/students" target="_blank">
+                <span class="bi bi-code-slash-nav-menu" aria-hidden="true"></span> 🌐 REST Web API (JSON)
+            </a>
+        </div>
+    </nav>
+</div>

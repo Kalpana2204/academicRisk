@@ -1,0 +1,14 @@
+@{
+    ViewData["Title"] = "Error";
+}
+
+<div class="container py-5 text-center">
+    <div class="card card-shadow p-5 mx-auto" style="max-width: 600px;">
+        <h1 class="text-danger display-4">An Error Occurred</h1>
+        <p class="lead mt-3">An unexpected condition was encountered by the ASP.NET Core exception pipeline.</p>
+        <div class="alert alert-secondary mt-3 text-start small">
+            <strong>Exception Handling:</strong> Caught by <code>app.UseExceptionHandler("/Home/Error")</code> middleware.
+        </div>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-primary mt-3">Return to Home</a>
+    </div>
+</div>

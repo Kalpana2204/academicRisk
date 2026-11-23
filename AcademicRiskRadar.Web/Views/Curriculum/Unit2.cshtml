@@ -1,0 +1,289 @@
+@{
+    ViewData["Title"] = "Academic Calculation Engine & Algorithms";
+    string activeDemo = ViewBag.ActiveDemo ?? "datatypes";
+}
+
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Platform Architecture</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Calculation Engine</li>
+        </ol>
+    </nav>
+    <h2 class="fw-bold mb-1">Academic Calculation Engine &amp; Algorithms</h2>
+    <p class="text-muted">Live execution test bench for variables, operators, loops, arrays, strings, OOP hierarchy, and exceptions.</p>
+</div>
+
+<!-- Sub-navigation -->
+<ul class="nav nav-pills mb-4 gap-2" id="unit2Tabs">
+    <li class="nav-item">
+        <a class="nav-link @(activeDemo == "datatypes" ? "active" : "") fw-bold" asp-action="Unit2" asp-route-demo="datatypes">
+            📦 Variables &amp; Types
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(activeDemo == "operators" ? "active" : "") fw-bold" asp-action="Unit2" asp-route-demo="operators">
+            ➕ Operators &amp; Precedence
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(activeDemo == "conditionals" ? "active" : "") fw-bold" asp-action="Unit2" asp-route-demo="conditionals">
+            🔀 Conditionals &amp; Switch
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(activeDemo == "loops" ? "active" : "") fw-bold" asp-action="Unit2" asp-route-demo="loops">
+            🔁 Loops &amp; Jumps
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(activeDemo == "arrays" ? "active" : "") fw-bold" asp-action="Unit2" asp-route-demo="arrays">
+            📊 Arrays (1D, 2D, Jagged)
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(activeDemo == "strings" ? "active" : "") fw-bold" asp-action="Unit2" asp-route-demo="strings">
+            🔤 Strings &amp; Methods
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(activeDemo == "oop" ? "active" : "") fw-bold" asp-action="Unit2" asp-route-demo="oop">
+            🏛️ OOP Hierarchy
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(activeDemo == "exceptions" ? "active" : "") fw-bold" asp-action="Unit2" asp-route-demo="exceptions">
+            ⚠️ Exception Handling
+        </a>
+    </li>
+</ul>
+
+@if (activeDemo == "datatypes")
+{
+    <!-- Datatypes -->
+    <div class="card card-shadow p-4">
+        <h4 class="fw-bold text-primary mb-2">Variables, Datatypes & Value vs Reference Types</h4>
+        <p class="text-muted small">@ViewBag.DataTypesExplanation</p>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped align-middle">
+                <thead class="table-light">
+                    <tr><th>C# Datatype & Category</th><th>Live Runtime Evaluated Value</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var entry in (Dictionary<string, string>)ViewBag.DataTypes)
+                    {
+                        <tr>
+                            <td><code>@entry.Key</code></td>
+                            <td><strong class="text-primary">@entry.Value</strong></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+else if (activeDemo == "operators")
+{
+    <!-- Operators & Precedence -->
+    <div class="card card-shadow p-4">
+        <h4 class="fw-bold text-primary mb-2">Operators & Operators Precedence Demonstration</h4>
+        <p class="text-muted small">@ViewBag.OperatorExplanation</p>
+
+        <form method="get" asp-action="Unit2" class="row g-3 mb-4 bg-light p-3 rounded">
+            <input type="hidden" name="demo" value="operators" />
+            <div class="col-md-4">
+                <label class="form-label small fw-bold">Operand A (Integer)</label>
+                <input type="number" name="a" value="@ViewBag.ParamA" class="form-control form-control-sm" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-bold">Operand B (Integer)</label>
+                <input type="number" name="b" value="@ViewBag.ParamB" class="form-control form-control-sm" />
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold">Re-calculate Operators &rarr;</button>
+            </div>
+        </form>
+
+        <ul class="list-group">
+            @foreach (var res in (List<string>)ViewBag.OperatorResults)
+            {
+                <li class="list-group-item font-monospace small">@res</li>
+            }
+        </ul>
+    </div>
+}
+else if (activeDemo == "conditionals")
+{
+    <!-- Conditionals & Pattern Matching -->
+    <div class="card card-shadow p-4">
+        <h4 class="fw-bold text-primary mb-2">Conditional Statements (if-else ladder & switch expression)</h4>
+
+        <form method="get" asp-action="Unit2" class="row g-3 mb-4 bg-light p-3 rounded">
+            <input type="hidden" name="demo" value="conditionals" />
+            <div class="col-md-4">
+                <label class="form-label small fw-bold">Attendance %</label>
+                <input type="number" name="att" value="@ViewBag.AttParam" step="0.5" class="form-control form-control-sm" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small fw-bold">Assessment Marks / 100</label>
+                <input type="number" name="test" value="@ViewBag.TestParam" step="0.5" class="form-control form-control-sm" />
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold">Evaluate Branch &rarr;</button>
+            </div>
+        </form>
+
+        <div class="alert alert-primary mb-3">
+            <h5 class="fw-bold mb-1">Branch Decision Verdict:</h5>
+            <div class="fs-5">@ViewBag.ConditionVerdict</div>
+        </div>
+
+        <h6 class="fw-bold">Execution Step Trace:</h6>
+        <ul class="list-group">
+            @foreach (var step in (List<string>)ViewBag.ConditionSteps)
+            {
+                <li class="list-group-item font-monospace small">@step</li>
+            }
+        </ul>
+    </div>
+}
+else if (activeDemo == "loops")
+{
+    <!-- Loops & Jump Statements -->
+    <div class="card card-shadow p-4">
+        <h4 class="fw-bold text-primary mb-2">Loops (for, while, do-while, foreach) & Jump Statements</h4>
+        <p class="text-muted small">@ViewBag.LoopSummary</p>
+
+        <div class="bg-dark text-light p-3 rounded" style="font-family: monospace; font-size: 0.85rem;">
+            @foreach (var line in (List<string>)ViewBag.LoopTrace)
+            {
+                <div class="@(line.StartsWith("---") ? "text-warning fw-bold mt-2" : "text-light")">@line</div>
+            }
+        </div>
+    </div>
+}
+else if (activeDemo == "arrays")
+{
+    <!-- Arrays -->
+    <div class="card card-shadow p-4">
+        <h4 class="fw-bold text-primary mb-2">Arrays & Types of Arrays (Single, Multidimensional, Jagged)</h4>
+        
+        <div class="row g-4 mb-3">
+            <div class="col-lg-7">
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light"><tr><th>Array Operation</th><th>Output</th></tr></thead>
+                        <tbody>
+                            @foreach (var item in (Dictionary<string, object>)ViewBag.ArrayData)
+                            {
+                                <tr>
+                                    <td><code>@item.Key</code></td>
+                                    <td><strong>@item.Value</strong></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="bg-light p-3 rounded border font-monospace small">
+                    <h6 class="fw-bold font-sans-serif">C# Array Syntax:</h6>
+                    <pre class="mb-0"><code>@ViewBag.ArrayCode</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else if (activeDemo == "strings")
+{
+    <!-- Strings -->
+    <div class="card card-shadow p-4">
+        <h4 class="fw-bold text-primary mb-2">Strings & String Methods, Immutability & StringBuilder</h4>
+
+        <div class="table-responsive mb-3">
+            <table class="table table-sm table-bordered">
+                <thead class="table-light"><tr><th>Method / Property</th><th>Evaluated Output</th></tr></thead>
+                <tbody>
+                    @foreach (var m in (Dictionary<string, string>)ViewBag.StringMethods)
+                    {
+                        <tr>
+                            <td><code>@m.Key</code></td>
+                            <td><code>@m.Value</code></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="p-3 bg-light rounded border">
+            <h6 class="fw-bold">High-Performance StringBuilder Execution:</h6>
+            <div class="font-monospace text-success">@ViewBag.StringBuilderResult</div>
+        </div>
+    </div>
+}
+else if (activeDemo == "oop")
+{
+    <!-- OOP Hierarchy -->
+    <div class="card card-shadow p-4">
+        <h4 class="fw-bold text-primary mb-2">Object-Oriented Programming Hierarchy in this Application</h4>
+        <p class="text-muted small">
+            Demonstrating Classes, Objects, Encapsulation, Abstraction, Constructors, Inheritance, Polymorphism, and Abstract Classes.
+        </p>
+
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="p-3 bg-light border rounded h-100">
+                    <div class="badge bg-secondary mb-2">Abstract Base Class</div>
+                    <h6 class="fw-bold text-primary">Person</h6>
+                    <p class="small text-muted mb-2">Encapsulates Id, Name, Email with getters/setters.</p>
+                    <ul class="small text-muted ps-3 mb-0">
+                        <li><code>abstract GetRoleDescription()</code></li>
+                        <li><code>virtual GetSummary()</code></li>
+                        <li>Protected constructors</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 bg-light border rounded h-100">
+                    <div class="badge bg-success mb-2">Inherited Derived Class</div>
+                    <h6 class="fw-bold text-success">StudentEntity : Person</h6>
+                    <p class="small text-muted mb-2">Extends Person with academic attributes.</p>
+                    <ul class="small text-muted ps-3 mb-0">
+                        <li><code>override GetRoleDescription()</code></li>
+                        <li><code>override GetSummary()</code></li>
+                        <li>Method Overloading: <code>CalculateSimpleRiskScore(...)</code></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="p-3 bg-light border rounded h-100">
+                    <div class="badge bg-info text-dark mb-2">Inherited Derived Class</div>
+                    <h6 class="fw-bold text-info text-dark">FacultyMentor : Person</h6>
+                    <p class="small text-muted mb-2">Extends Person with departmental duties.</p>
+                    <ul class="small text-muted ps-3 mb-0">
+                        <li><code>override GetRoleDescription()</code></li>
+                        <li>Chained base constructor <code>: base(id, name, email)</code></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <!-- Exception Handling -->
+    <div class="card card-shadow p-4">
+        <h4 class="fw-bold text-primary mb-2">Exception Handling (try, catch, finally & Custom Exceptions)</h4>
+        
+        <div class="alert @(ViewBag.ExSuccess ? "alert-success" : "alert-danger") mb-3">
+            <h5 class="fw-bold mb-1">Execution Status: @ViewBag.ExMsg</h5>
+            <div>@ViewBag.ExDetails</div>
+        </div>
+
+        <h6 class="fw-bold">Try-Catch-Finally Execution Pipeline Flow:</h6>
+        <div class="bg-dark text-light p-3 rounded font-monospace small">
+            <pre class="text-light mb-0"><code>@ViewBag.ExFlow</code></pre>
+        </div>
+    </div>
+}

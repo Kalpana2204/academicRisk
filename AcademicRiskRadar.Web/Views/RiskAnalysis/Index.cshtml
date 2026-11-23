@@ -1,0 +1,97 @@
+@model IEnumerable<dynamic>
+
+@{
+    ViewData["Title"] = "Academic Risk Analysis Engine";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Predictive Risk Scoring Engine</h2>
+        <p class="text-muted mb-0">
+            Active Evaluation Model: <strong>@ViewBag.ActiveStrategyName</strong>
+        </p>
+    </div>
+
+    <!-- Strategy Switcher -->
+    <div class="btn-group shadow-sm" role="group">
+        <a asp-action="Index" asp-route-strategy="Standard" class="btn @(ViewBag.SelectedStrategy == "Standard" ? "btn-primary" : "btn-outline-primary") fw-semibold">
+            Standard Multi-Factor
+        </a>
+        <a asp-action="Index" asp-route-strategy="Trend" class="btn @(ViewBag.SelectedStrategy == "Trend" ? "btn-primary" : "btn-outline-primary") fw-semibold">
+            Trend &amp; Momentum Model
+        </a>
+    </div>
+</div>
+
+<div class="pro-card p-3 mb-4 bg-light border-0">
+    <strong>💡 Scoring Methodology:</strong> The <strong>Standard Model</strong> computes risk based on weighted benchmarks. The <strong>Trend &amp; Momentum Model</strong> analyzes longitudinal velocity across multi-week attendance checkpoints to flag students on downward trajectories before exam failure occurs.
+</div>
+
+<div class="pro-card overflow-hidden">
+    <div class="table-responsive">
+        <table class="table pro-table align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Student</th>
+                    <th>Dept</th>
+                    <th>Attendance</th>
+                    <th>Assessment</th>
+                    <th>Active Model Score</th>
+                    <th>Risk Band</th>
+                    <th>Diagnostic Factor</th>
+                    <th class="text-end">Intervention</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    var student = item.Student as AcademicRiskRadar.Web.Models.StudentEntity;
+                    if (student == null) continue;
+                    double score = item.EvaluatedScore;
+                    var level = (AcademicRiskRadar.Web.Models.RiskLevel)item.EvaluatedLevel;
+                    string reason = item.Reason;
+
+                    var badgeClass = level switch
+                    {
+                        RiskLevel.Critical => "bg-danger",
+                        RiskLevel.High => "bg-warning text-dark",
+                        RiskLevel.Moderate => "bg-primary",
+                        _ => "bg-success"
+                    };
+
+                    <tr>
+                        <td>
+                            <div class="fw-bold">@student.Name</div>
+                            <span class="badge bg-light text-dark border">@student.StudentCode</span>
+                        </td>
+                        <td>@student.Department</td>
+                        <td>
+                            <span class="@(student.AttendanceRate < 75 ? "text-danger fw-bold" : "text-success")">
+                                @student.AttendanceRate.ToString("F1")%
+                            </span>
+                        </td>
+                        <td>
+                            <span class="@(student.AssessmentScore < 60 ? "text-danger fw-bold" : "text-dark")">
+                                @student.AssessmentScore.ToString("F1")%
+                            </span>
+                        </td>
+                        <td>
+                            <span class="fs-5 fw-bold">@score.ToString("F1")%</span>
+                        </td>
+                        <td>
+                            <span class="badge @badgeClass px-2 py-1">@level</span>
+                        </td>
+                        <td>
+                            <small class="text-muted">@reason</small>
+                        </td>
+                        <td class="text-end">
+                            <a asp-action="LogIntervention" asp-route-studentId="@student.Id" class="btn btn-outline-warning btn-sm text-dark fw-bold">
+                                + Intervene
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,744 @@
+
+@page "/reports"
+@rendermode InteractiveServer
+@using System.Linq
+@using System.Text
+@using System.Globalization
+@using AcademicRiskRadar.Web.Services
+@inject AcademicDataService AcademicData
+
+<PageTitle>Reports & Analytics | Academic Risk Radar</PageTitle>
+
+<div class="reports-page">
+
+    <div class="page-heading">
+        <div>
+            <h1>Reports & Analytics</h1>
+            <p>
+                Analyse student performance, calculated risk
+                scores and department-level academic patterns.
+            </p>
+        </div>
+
+        <a class="export-button"
+           href="@CsvDataUrl"
+           download="AcademicRiskRadar_Report.csv">
+            ↓ Export CSV Report
+        </a>
+    </div>
+
+    <div class="demo-notice">
+        Reports use the shared academic data service and
+        risk scoring model @RiskScoringService.ModelVersion.
+        All student records are synthetic.
+    </div>
+
+    <!-- Report Filters -->
+    <section class="report-panel filters-panel">
+
+        <div class="filters-heading">
+            <h2>Report Filters</h2>
+            <p>
+                Choose which student records to include.
+            </p>
+        </div>
+
+        <div class="filter-controls">
+
+            <div class="filter-field">
+                <label for="department-filter">
+                    Department
+                </label>
+
+                <select id="department-filter"
+                        @bind="SelectedDepartment">
+
+                    <option value="All">All Departments</option>
+
+                    @foreach (var departmentName in Departments)
+                    {
+                        <option value="@departmentName">
+                            @departmentName
+                        </option>
+                    }
+
+                </select>
+            </div>
+
+            <div class="filter-field">
+                <label for="risk-filter">
+                    Risk Level
+                </label>
+
+                <select id="risk-filter"
+                        @bind="SelectedRisk">
+
+                    <option value="All">All Risk Levels</option>
+                    <option value="High">High Risk</option>
+                    <option value="Moderate">Moderate Risk</option>
+                    <option value="Low">Low Risk</option>
+
+                </select>
+            </div>
+
+            <div class="filter-field search-field">
+                <label for="student-search">
+                    Search Student
+                </label>
+
+                <input id="student-search"
+                       type="search"
+                       placeholder="Search name or student ID..."
+                       @bind="SearchText"
+                       @bind:event="oninput" />
+            </div>
+
+            <button type="button"
+                    class="reset-button"
+                    @onclick="ResetFilters">
+                Reset Filters
+            </button>
+
+        </div>
+
+    </section>
+
+    <!-- KPI Summary -->
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <span>Students in Report</span>
+            <strong>@FilteredStudents.Count</strong>
+            <small>Matching selected filters</small>
+        </div>
+
+        <div class="stat-card">
+            <span>High Risk Students</span>
+            <strong class="red">@HighRiskCount</strong>
+            <small>Calculated risk classifications</small>
+        </div>
+
+        <div class="stat-card">
+            <span>Average Attendance</span>
+            <strong>@AverageAttendance.ToString("0.0")%</strong>
+            <small>Among filtered students</small>
+        </div>
+
+        <div class="stat-card">
+            <span>Average Assessment</span>
+            <strong>@AverageAssessment.ToString("0.0")%</strong>
+            <small>Among filtered students</small>
+        </div>
+
+    </div>
+
+    <!-- Analytics Charts -->
+    <div class="analytics-grid">
+
+        <!-- Risk Distribution -->
+        <section class="report-panel">
+
+            <div class="panel-heading">
+                <div>
+                    <h2>Risk Distribution</h2>
+                    <p>
+                        Classification using the shared scoring engine
+                    </p>
+                </div>
+            </div>
+
+            <div class="distribution-list">
+
+                @foreach (var riskGroup in RiskDistribution)
+                {
+                    <div class="distribution-item">
+
+                        <div class="distribution-heading">
+                            <span>@riskGroup.Name Risk</span>
+
+                            <strong>
+                                @riskGroup.Count
+                                (@riskGroup.Percentage.ToString("0.0")%)
+                            </strong>
+                        </div>
+
+                        <div class="distribution-track">
+
+                            <div class="distribution-fill @riskGroup.Name.ToLowerInvariant()"
+                                 style="@GetWidthStyle(riskGroup.Percentage)">
+                            </div>
+
+                        </div>
+                    </div>
+                }
+
+            </div>
+
+            <div class="chart-footer">
+                Classification thresholds: Low below 30,
+                Moderate from 30 to below 60,
+                and High from 60 upward.
+            </div>
+
+        </section>
+
+        <!-- Department Comparison -->
+        <section class="report-panel">
+
+            <div class="panel-heading">
+                <div>
+                    <h2>Department Risk Comparison</h2>
+                    <p>
+                        Calculated risk distribution by department
+                    </p>
+                </div>
+            </div>
+
+            <div class="department-chart">
+
+                @foreach (var departmentRecord in DepartmentSummaries)
+                {
+                    <div class="department-row">
+
+                        <div class="department-heading">
+                            <strong>@departmentRecord.Name</strong>
+                            <span>@departmentRecord.Total students</span>
+                        </div>
+
+                        <div class="stacked-track">
+
+                            <div class="stacked-fill low"
+                                 title="@($"Low Risk: {departmentRecord.Low}")"
+                                 style="@GetWidthStyle(GetPercentage(departmentRecord.Low, departmentRecord.Total))">
+                            </div>
+
+                            <div class="stacked-fill moderate"
+                                 title="@($"Moderate Risk: {departmentRecord.Moderate}")"
+                                 style="@GetWidthStyle(GetPercentage(departmentRecord.Moderate, departmentRecord.Total))">
+                            </div>
+
+                            <div class="stacked-fill high"
+                                 title="@($"High Risk: {departmentRecord.High}")"
+                                 style="@GetWidthStyle(GetPercentage(departmentRecord.High, departmentRecord.Total))">
+                            </div>
+
+                        </div>
+
+                    </div>
+                }
+
+                @if (!DepartmentSummaries.Any())
+                {
+                    <p class="empty-state">
+                        No department records match your filters.
+                    </p>
+                }
+
+            </div>
+
+            <div class="chart-legend">
+                <span><i class="legend-dot low"></i>Low</span>
+                <span><i class="legend-dot moderate"></i>Moderate</span>
+                <span><i class="legend-dot high"></i>High</span>
+            </div>
+
+        </section>
+
+    </div>
+
+    <!-- Academic Indicators and Interventions -->
+    <div class="analytics-grid">
+
+        <section class="report-panel">
+
+            <div class="panel-heading">
+                <div>
+                    <h2>Intervention Overview</h2>
+                    <p>Illustrative mentoring workflow status</p>
+                </div>
+            </div>
+
+            <div class="intervention-summary">
+
+                <div class="intervention-total">
+                    <strong>
+                        @InterventionSummaries.Sum(x => x.Count)
+                    </strong>
+                    <span>Demo Interventions</span>
+                </div>
+
+                <div class="intervention-status-list">
+
+                    @foreach (var statusRecord in InterventionSummaries)
+                    {
+                        <div class="intervention-status-row">
+
+                            <span>
+                                <i class="legend-dot @GetCssClass(statusRecord.Name)"></i>
+                                @statusRecord.Name
+                            </span>
+
+                            <strong>@statusRecord.Count</strong>
+
+                        </div>
+                    }
+
+                </div>
+            </div>
+
+            <p class="panel-note">
+                Intervention figures are still a separate demo
+                snapshot. They will be connected to the shared
+                intervention service in a later step.
+            </p>
+
+        </section>
+
+        <section class="report-panel">
+
+            <div class="panel-heading">
+                <div>
+                    <h2>Academic Indicator Summary</h2>
+                    <p>Average performance of filtered students</p>
+                </div>
+            </div>
+
+            <div class="indicator-list">
+
+                <div class="indicator-row">
+                    <div class="indicator-heading">
+                        <span>Attendance</span>
+                        <strong>
+                            @AverageAttendance.ToString("0.0")%
+                        </strong>
+                    </div>
+
+                    <div class="indicator-track">
+                        <div class="indicator-fill attendance"
+                             style="@GetWidthStyle(AverageAttendance)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="indicator-row">
+                    <div class="indicator-heading">
+                        <span>Assessment Performance</span>
+                        <strong>
+                            @AverageAssessment.ToString("0.0")%
+                        </strong>
+                    </div>
+
+                    <div class="indicator-track">
+                        <div class="indicator-fill assessment"
+                             style="@GetWidthStyle(AverageAssessment)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="indicator-row">
+                    <div class="indicator-heading">
+                        <span>Assignment Completion</span>
+                        <strong>
+                            @AverageAssignmentCompletion.ToString("0.0")%
+                        </strong>
+                    </div>
+
+                    <div class="indicator-track">
+                        <div class="indicator-fill assignments"
+                             style="@GetWidthStyle(AverageAssignmentCompletion)">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="indicator-row">
+                    <div class="indicator-heading">
+                        <span>LMS Engagement</span>
+                        <strong>
+                            @AverageLmsActivity.ToString("0.0")%
+                        </strong>
+                    </div>
+
+                    <div class="indicator-track">
+                        <div class="indicator-fill lms"
+                             style="@GetWidthStyle(AverageLmsActivity)">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+    </div>
+
+    <!-- Detailed Report -->
+    <section class="report-panel student-report-panel">
+
+        <div class="panel-heading">
+
+            <div>
+                <h2>Detailed Student Report</h2>
+                <p>
+                    Academic indicators and calculated risk scores
+                </p>
+            </div>
+
+            <span class="record-pill">
+                @FilteredStudents.Count Records
+            </span>
+
+        </div>
+
+        <div class="table-scroll">
+
+            <table class="report-table">
+
+                <thead>
+                    <tr>
+                        <th>STUDENT</th>
+                        <th>DEPARTMENT</th>
+                        <th>ATTENDANCE</th>
+                        <th>ASSESSMENT</th>
+                        <th>ASSIGNMENTS</th>
+                        <th>LMS</th>
+                        <th>RISK SCORE</th>
+                        <th>RISK LEVEL</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var studentRecord in FilteredStudents.OrderBy(x => x.Id))
+                    {
+                        var riskResult = CalculateRisk(studentRecord);
+
+                        <tr>
+                            <td>
+                                <strong>@studentRecord.Name</strong>
+                                <small>@studentRecord.Id</small>
+                            </td>
+
+                            <td>@studentRecord.Department</td>
+
+                            <td>@studentRecord.Attendance%</td>
+
+                            <td>@studentRecord.Assessment%</td>
+
+                            <td>
+                                @studentRecord.SubmittedAssignments/@studentRecord.TotalAssignments
+                            </td>
+
+                            <td>@studentRecord.LmsActivity%</td>
+
+                            <td>
+                                <strong>
+                                    @riskResult.Score.ToString("0.0")
+                                </strong>
+                            </td>
+
+                            <td>
+                                <span class="risk-badge @riskResult.Band.ToLowerInvariant()">
+                                    @riskResult.Band
+                                </span>
+                            </td>
+                        </tr>
+                    }
+
+                    @if (!FilteredStudents.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="empty-state">
+                                No students match the selected filters.
+                            </td>
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <div class="table-footer">
+            Showing @FilteredStudents.Count of
+            @StudentRecords.Count demonstration records
+        </div>
+
+    </section>
+
+    <div class="privacy-notice">
+        <strong>Reporting and Academic Privacy</strong>
+
+        <p>
+            Risk scores, classifications and department summaries
+            are derived from the shared demonstration scoring engine.
+
+            Reports and exports are currently available without
+            authentication and must not contain real student records
+            until authorization and data protection are implemented.
+            These scores are not validated predictions.
+        </p>
+    </div>
+
+</div>
+
+@code {
+
+    private string SelectedDepartment = "All";
+    private string SelectedRisk = "All";
+    private string SearchText = "";
+
+    private IReadOnlyList<Student> StudentRecords =>
+        AcademicData.GetAllStudents();
+
+    private static RiskWeights DefaultWeights =>
+        RiskWeights.Default;
+
+    private RiskScoreResult CalculateRisk(Student studentRecord)
+    {
+        return RiskScoringService.Calculate(
+            studentRecord,
+            DefaultWeights
+        );
+    }
+
+    private List<string> Departments =>
+        StudentRecords
+            .Select(record => record.Department)
+            .Distinct()
+            .OrderBy(name => name)
+            .ToList();
+
+    private List<Student> FilteredStudents =>
+        StudentRecords
+            .Where(record =>
+                SelectedDepartment == "All" ||
+                record.Department == SelectedDepartment
+            )
+            .Where(record =>
+                SelectedRisk == "All" ||
+                CalculateRisk(record).Band == SelectedRisk
+            )
+            .Where(record =>
+                string.IsNullOrWhiteSpace(SearchText) ||
+                record.Name.Contains(
+                    SearchText,
+                    StringComparison.OrdinalIgnoreCase
+                ) ||
+                record.Id.Contains(
+                    SearchText,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
+            .ToList();
+
+    private int HighRiskCount =>
+        FilteredStudents.Count(record =>
+            CalculateRisk(record).Band == "High"
+        );
+
+    private double AverageAttendance =>
+        FilteredStudents.Count == 0
+            ? 0
+            : FilteredStudents.Average(
+                record => record.Attendance
+            );
+
+    private double AverageAssessment =>
+        FilteredStudents.Count == 0
+            ? 0
+            : FilteredStudents.Average(
+                record => record.Assessment
+            );
+
+    private double AverageAssignmentCompletion =>
+        FilteredStudents.Count == 0
+            ? 0
+            : FilteredStudents.Average(
+                record => record.AssignmentCompletion
+            );
+
+    private double AverageLmsActivity =>
+        FilteredStudents.Count == 0
+            ? 0
+            : FilteredStudents.Average(
+                record => record.LmsActivity
+            );
+
+    private List<RiskGroup> RiskDistribution
+    {
+        get
+        {
+            int total = FilteredStudents.Count;
+
+            return new List<RiskGroup>
+            {
+                CreateRiskGroup("Low", total),
+                CreateRiskGroup("Moderate", total),
+                CreateRiskGroup("High", total)
+            };
+        }
+    }
+
+    private RiskGroup CreateRiskGroup(
+        string riskBand,
+        int total)
+    {
+        int count = FilteredStudents.Count(record =>
+            CalculateRisk(record).Band == riskBand
+        );
+
+        return new RiskGroup(
+            riskBand,
+            count,
+            GetPercentage(count, total)
+        );
+    }
+
+    private List<DepartmentSummary> DepartmentSummaries =>
+        FilteredStudents
+            .GroupBy(record => record.Department)
+            .OrderBy(group => group.Key)
+            .Select(group => new DepartmentSummary(
+                group.Key,
+                group.Count(),
+
+                group.Count(record =>
+                    CalculateRisk(record).Band == "Low"),
+
+                group.Count(record =>
+                    CalculateRisk(record).Band == "Moderate"),
+
+                group.Count(record =>
+                    CalculateRisk(record).Band == "High")
+            ))
+            .ToList();
+
+    private static double GetPercentage(
+        int count,
+        int total)
+    {
+        return total == 0
+            ? 0
+            : 100.0 * count / total;
+    }
+
+    private static string GetWidthStyle(double percentage)
+    {
+        double safeValue = Math.Clamp(percentage, 0, 100);
+
+        return "width:" +
+            safeValue.ToString(
+                "0.##",
+                CultureInfo.InvariantCulture
+            ) + "%;";
+    }
+
+    private static string GetCssClass(string value)
+    {
+        return value
+            .ToLowerInvariant()
+            .Replace(" ", "-");
+    }
+
+    private void ResetFilters()
+    {
+        SelectedDepartment = "All";
+        SelectedRisk = "All";
+        SearchText = "";
+    }
+
+    // Generate CSV from the exact filtered data
+    // displayed on the report page.
+    private string CsvDataUrl =>
+        "data:text/csv;charset=utf-8," +
+        Uri.EscapeDataString(BuildCsv());
+
+    private string BuildCsv()
+    {
+        var csv = new StringBuilder();
+
+        csv.AppendLine(
+            "Student ID,Student Name,Department," +
+            "Attendance (%),Assessment (%)," +
+            "Assignments Submitted,Total Assignments," +
+            "LMS Activity (%),Risk Score,Risk Band,Model Version"
+        );
+
+        foreach (var record in FilteredStudents.OrderBy(x => x.Id))
+        {
+            var result = CalculateRisk(record);
+
+            csv.AppendLine(string.Join(",",
+                EscapeCsv(record.Id),
+                EscapeCsv(record.Name),
+                EscapeCsv(record.Department),
+
+                record.Attendance.ToString(
+                    CultureInfo.InvariantCulture),
+
+                record.Assessment.ToString(
+                    CultureInfo.InvariantCulture),
+
+                record.SubmittedAssignments.ToString(
+                    CultureInfo.InvariantCulture),
+
+                record.TotalAssignments.ToString(
+                    CultureInfo.InvariantCulture),
+
+                record.LmsActivity.ToString(
+                    CultureInfo.InvariantCulture),
+
+                result.Score.ToString(
+                    "0.00",
+                    CultureInfo.InvariantCulture),
+
+                EscapeCsv(result.Band),
+                EscapeCsv(result.ModelVersion)
+            ));
+        }
+
+        return csv.ToString();
+    }
+
+    private static string EscapeCsv(string value)
+    {
+        if (value.Length > 0 &&
+            "=+-@\t\r\n".Contains(value[0]))
+        {
+            value = "'" + value;
+        }
+
+        return "\"" +
+            value.Replace("\"", "\"\"") +
+            "\"";
+    }
+
+    private sealed record RiskGroup(
+        string Name,
+        int Count,
+        double Percentage
+    );
+
+    private sealed record DepartmentSummary(
+        string Name,
+        int Total,
+        int Low,
+        int Moderate,
+        int High
+    );
+
+    private sealed record InterventionSummary(
+        string Name,
+        int Count
+    );
+
+    private static readonly List<InterventionSummary>
+        InterventionSummaries = new()
+    {
+        new("Scheduled", 1),
+        new("In Progress", 1),
+        new("Completed", 1),
+        new("Cancelled", 0)
+    };
+}

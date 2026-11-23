@@ -1,0 +1,190 @@
+@{
+    ViewData["Title"] = "MVC Architecture & State Pipeline";
+}
+
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Platform Architecture</a></li>
+            <li class="breadcrumb-item active" aria-current="page">MVC &amp; State Pipeline</li>
+        </ol>
+    </nav>
+    <h2 class="fw-bold mb-1">MVC Architecture &amp; State Pipeline</h2>
+    <p class="text-muted">MVC architecture, Razor Engine, folder structure, data passing mechanisms, and validated forms.</p>
+</div>
+
+<!-- Section 1: Folder Structure -->
+<div class="card card-shadow p-4 mb-4">
+    <h4 class="fw-bold text-primary mb-3">1. ASP.NET Core Project Folder Structure</h4>
+    <div class="row g-3">
+        <div class="col-md-3">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold">📁 Controllers/</h6>
+                <p class="small text-muted mb-0">Contains C# classes inheriting from <code>Controller</code> or <code>ControllerBase</code> that handle incoming HTTP requests.</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold">📁 Models/</h6>
+                <p class="small text-muted mb-0">Contains Domain Entities, ViewModels, and Data Transfer Objects representing business data and validation logic.</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold">📁 Views/</h6>
+                <p class="small text-muted mb-0">Contains <code>.cshtml</code> Razor templates organized by controller name, plus <code>Shared/</code> layouts and partials.</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold">📁 wwwroot/</h6>
+                <p class="small text-muted mb-0">Root for static assets: CSS stylesheets, JavaScript files, images, and client-side vendor libraries.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 2: MVC Communication & Action Results -->
+<div class="card card-shadow p-4 mb-4">
+    <h4 class="fw-bold text-primary mb-3">2. MVC Pattern & Request Handling in .NET Core</h4>
+    <p>
+        The <strong>Model-View-Controller (MVC)</strong> pattern isolates business logic (Model), UI rendering (View), 
+        and user input routing (Controller).
+    </p>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-sm align-middle">
+            <thead class="table-light"><tr><th>Action Result</th><th>C# Helper Method</th><th>HTTP Behavior / Output</th></tr></thead>
+            <tbody>
+                <tr><td><code>ViewResult</code></td><td><code>return View(model);</code></td><td>Renders a Razor view with the model to generate HTML.</td></tr>
+                <tr><td><code>JsonResult</code></td><td><code>return Json(data);</code></td><td>Serializes C# object to JSON format with <code>application/json</code>.</td></tr>
+                <tr><td><code>RedirectToActionResult</code></td><td><code>return RedirectToAction("Index");</code></td><td>Sends HTTP 302 redirect instructing browser to request new action.</td></tr>
+                <tr><td><code>NotFoundResult</code></td><td><code>return NotFound();</code></td><td>Sends standard HTTP 404 Not Found response.</td></tr>
+                <tr><td><code>BadRequestResult</code></td><td><code>return BadRequest(ModelState);</code></td><td>Sends HTTP 400 Bad Request with validation errors.</td></tr>
+                <tr><td><code>CreatedAtActionResult</code></td><td><code>return CreatedAtAction(...);</code></td><td>Sends HTTP 201 Created with Location response header.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Section 3: Live Data Passing Techniques Test Bench -->
+<div class="card card-shadow p-4 mb-4 border-start border-4 border-primary">
+    <h4 class="fw-bold text-primary mb-3">3. Data Passing Techniques Live Test Bench</h4>
+    <p class="text-muted small">Compare how data moves from Controller to View and across requests:</p>
+
+    <div class="row g-3">
+        <!-- ViewData -->
+        <div class="col-md-6">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-primary">A. ViewData (Dictionary Object)</h6>
+                <p class="small text-muted">Weakly typed dictionary (<code>ViewData["Key"]</code>). Requires explicit type casting in View.</p>
+                <div class="p-2 bg-white rounded border small font-monospace">
+                    ViewData["ViewDataSample"] = <br />
+                    <strong class="text-primary">@ViewData["ViewDataSample"]</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- ViewBag -->
+        <div class="col-md-6">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-success">B. ViewBag (Dynamic Property Bag)</h6>
+                <p class="small text-muted">Wrapper around ViewData using C# <code>dynamic</code>. No casting needed.</p>
+                <div class="p-2 bg-white rounded border small font-monospace">
+                    ViewBag.ViewBagSample = <br />
+                    <strong class="text-success">@ViewBag.ViewBagSample</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- TempData -->
+        <div class="col-md-6">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-danger">C. TempData (Flash across Redirects)</h6>
+                <p class="small text-muted">Stored in Session/Cookies. Persists across a single HTTP redirect before auto-deletion.</p>
+                <div class="p-2 bg-white rounded border small font-monospace mb-2">
+                    TempData["TempDataDemo"] = <br />
+                    <strong class="text-danger">@TempData["TempDataDemo"]</strong>
+                </div>
+                <form asp-action="TriggerTempDataRedirect" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-danger btn-sm w-100 fw-bold">
+                        ⚡ Test TempData Across Redirect &rarr;
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Session -->
+        <div class="col-md-6">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-info text-dark">D. Session & State Management</h6>
+                <p class="small text-muted">Server-side state tied to cookie session ID. Persists throughout the user's browser session.</p>
+                <div class="p-2 bg-white rounded border small font-monospace">
+                    HttpContext.Session.GetString("DemoSessionKey") = <br />
+                    <strong class="text-info text-dark">@ViewBag.SessionValue</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- QueryString -->
+        <div class="col-12">
+            <div class="p-3 bg-light rounded border">
+                <h6 class="fw-bold text-warning text-dark">E. Working with QueryString</h6>
+                <p class="small text-muted">Passed directly in the URL: <code>?sampleQuery=...&priority=...</code> and bound via <code>[FromQuery]</code>.</p>
+                <form method="get" asp-action="Unit3" class="row g-2 align-items-center">
+                    <div class="col-md-5">
+                        <input type="text" name="sampleQuery" value="@ViewBag.SampleQuery" class="form-control form-control-sm" placeholder="Enter query term" />
+                    </div>
+                    <div class="col-md-4">
+                        <select name="priority" class="form-select form-select-sm">
+                            <option value="1" selected="@(ViewBag.Priority == 1)">Priority 1 (Critical)</option>
+                            <option value="2" selected="@(ViewBag.Priority == 2)">Priority 2 (High)</option>
+                            <option value="3" selected="@(ViewBag.Priority == 3)">Priority 3 (Standard)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-warning btn-sm w-100 fw-bold text-dark">Submit QueryString &rarr;</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 4: Forms & Validations -->
+<div class="card card-shadow p-4">
+    <h4 class="fw-bold text-primary mb-3">4. ASP.NET Core Forms, Model Binding & Validations</h4>
+    <p>
+        ASP.NET Core enables end-to-end data validation through <strong>Data Annotations</strong>.
+    </p>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold">Server-Side Validation</h6>
+                <p class="small text-muted">
+                    Evaluated on server when controller receives POST:
+                </p>
+                <div class="font-monospace small bg-white p-2 rounded border">
+                    if (!ModelState.IsValid)<br />
+                    {<br />
+                    &nbsp;&nbsp;return View(model); // Returns errors to user<br />
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold">Client-Side Validation</h6>
+                <p class="small text-muted">
+                    Uses unobtrusive HTML5 <code>data-val-*</code> attributes to validate forms instantly in browser without full roundtrip!
+                </p>
+                <div class="mt-2">
+                    <a asp-controller="Students" asp-action="Create" class="btn btn-primary btn-sm">
+                        View Live Validated Form (Students/Create) &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

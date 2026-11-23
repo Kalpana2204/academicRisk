@@ -1,0 +1,593 @@
+﻿
+@page "/"
+@rendermode InteractiveServer
+@using System.Linq
+@using System.Globalization
+@using AcademicRiskRadar.Web.Services
+@inject AcademicDataService AcademicData
+@inject AcademicWorkflowService Workflow
+
+<PageTitle>Dashboard | Academic Risk Radar</PageTitle>
+
+<div class="dashboard">
+
+    <!-- Dashboard Header -->
+    <div class="dashboard-heading">
+        <div>
+            <h1>Academic Overview</h1>
+            <p>
+                Monitor student performance, academic risks,
+                alerts and mentoring interventions.
+            </p>
+        </div>
+
+        <div class="semester-pill">
+            Academic Year 2026–27
+        </div>
+    </div>
+
+    <!-- Summary Statistics -->
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <div class="stat-top">
+                <span>Total Students</span>
+                <div class="stat-icon blue">ST</div>
+            </div>
+
+            <h2>@TotalStudents</h2>
+            <p>Students currently monitored</p>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-top">
+                <span>High Risk Students</span>
+                <div class="stat-icon red">!</div>
+            </div>
+
+            <h2>@HighRiskCount</h2>
+            <p>Calculated by shared scoring engine</p>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-top">
+                <span>Pending Alerts</span>
+                <div class="stat-icon amber">AL</div>
+            </div>
+
+            <h2>@PendingAlertCount</h2>
+            <p>From shared academic alert records</p>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-top">
+                <span>Active Interventions</span>
+                <div class="stat-icon green">IN</div>
+            </div>
+
+            <h2>@ActiveInterventionCount</h2>
+            <p>Scheduled and in-progress cases</p>
+        </div>
+
+    </div>
+
+    <!-- Analytics -->
+    <div class="analytics-grid">
+
+        <!-- Risk Distribution -->
+        <section class="dashboard-panel">
+
+            <div class="panel-heading">
+                <div>
+                    <h3>Student Risk Distribution</h3>
+                    <p>Calculated from shared academic records</p>
+                </div>
+
+                <span class="panel-tag">
+                    @RiskScoringService.ModelVersion
+                </span>
+            </div>
+
+            <div class="distribution-container">
+
+                <div class="donut-chart" style="@DonutStyle">
+                    <div class="donut-center">
+                        <strong>@TotalStudents</strong>
+                        <span>Students</span>
+                    </div>
+                </div>
+
+                <div class="risk-legend">
+
+                    <div class="legend-row">
+                        <span>
+                            <i class="legend-dot low"></i>
+                            Low Risk
+                        </span>
+                        <strong>@LowRiskCount</strong>
+                    </div>
+
+                    <div class="legend-row">
+                        <span>
+                            <i class="legend-dot moderate"></i>
+                            Moderate Risk
+                        </span>
+                        <strong>@ModerateRiskCount</strong>
+                    </div>
+
+                    <div class="legend-row">
+                        <span>
+                            <i class="legend-dot high"></i>
+                            High Risk
+                        </span>
+                        <strong>@HighRiskCount</strong>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Shared Recent Alerts -->
+        <section class="dashboard-panel">
+
+            <div class="panel-heading">
+                <div>
+                    <h3>Recent Academic Alerts</h3>
+                    <p>
+                        Latest notifications from the shared
+                        workflow service
+                    </p>
+                </div>
+
+                <span class="panel-tag">
+                    @PendingAlertCount Pending
+                </span>
+            </div>
+
+            <div class="alerts-list">
+
+                @foreach (var alertRecord in RecentAlerts)
+                {
+                    <div class="alert-item">
+
+                        <div class="alert-indicator @(alertRecord.Priority == "High" ? "high" : "moderate")">
+                            !
+                        </div>
+
+                        <div class="alert-information">
+                            <strong>@alertRecord.StudentName</strong>
+
+                            <p>@alertRecord.Title</p>
+
+                            <small>
+                                @alertRecord.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")
+                            </small>
+                        </div>
+
+                        <span class="alert-status @(alertRecord.Acknowledged ? "acknowledged" : "pending")">
+                            @(alertRecord.Acknowledged
+                                ? "Acknowledged"
+                                : "Pending")
+                        </span>
+
+                    </div>
+                }
+
+                @if (!RecentAlerts.Any())
+                {
+                    <p>No academic alerts are available.</p>
+                }
+
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Additional Academic Statistics -->
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <div class="stat-top">
+                <span>Average Attendance</span>
+                <div class="stat-icon blue">AT</div>
+            </div>
+
+            <h2>@AverageAttendance.ToString("0.0")%</h2>
+            <p>Across monitored students</p>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-top">
+                <span>Average Assessment</span>
+                <div class="stat-icon green">AS</div>
+            </div>
+
+            <h2>@AverageAssessment.ToString("0.0")%</h2>
+            <p>Academic performance average</p>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-top">
+                <span>Moderate Risk</span>
+                <div class="stat-icon amber">MR</div>
+            </div>
+
+            <h2>@ModerateRiskCount</h2>
+            <p>Students needing closer monitoring</p>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-top">
+                <span>Low Risk</span>
+                <div class="stat-icon green">LR</div>
+            </div>
+
+            <h2>@LowRiskCount</h2>
+            <p>Students in the low-risk band</p>
+        </div>
+
+    </div>
+
+    <!-- Student Risk Monitoring -->
+    <section class="dashboard-panel students-panel">
+
+        <div class="panel-heading student-table-heading">
+
+            <div>
+                <h3>Student Risk Monitoring</h3>
+                <p>
+                    Calculated scores and academic support indicators
+                </p>
+            </div>
+
+            <div class="table-tools">
+
+                <input class="student-search"
+                       type="search"
+                       placeholder="Search students..."
+                       aria-label="Search students"
+                       @bind="SearchText"
+                       @bind:event="oninput" />
+
+                <select class="risk-filter"
+                        aria-label="Filter by risk level"
+                        @bind="SelectedRisk">
+
+                    <option value="All">All Risk Levels</option>
+                    <option value="High">High Risk</option>
+                    <option value="Moderate">Moderate Risk</option>
+                    <option value="Low">Low Risk</option>
+
+                </select>
+
+            </div>
+        </div>
+
+        <div class="table-responsive">
+
+            <table class="student-table">
+
+                <thead>
+                    <tr>
+                        <th>STUDENT</th>
+                        <th>DEPARTMENT</th>
+                        <th>ATTENDANCE</th>
+                        <th>MARKS</th>
+                        <th>RISK SCORE</th>
+                        <th>RISK LEVEL</th>
+                        <th>CONTRIBUTING FACTORS</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var studentRecord in FilteredStudents)
+                    {
+                        var result = CalculateRisk(studentRecord);
+
+                        <tr>
+
+                            <td>
+                                <div class="student-identity">
+
+                                    <div class="student-avatar">
+                                        @GetInitials(studentRecord.Name)
+                                    </div>
+
+                                    <div>
+                                        <strong>@studentRecord.Name</strong>
+                                        <small>@studentRecord.Id</small>
+                                    </div>
+
+                                </div>
+                            </td>
+
+                            <td>@studentRecord.Department</td>
+
+                            <td>
+                                <span class="metric-value">
+                                    @studentRecord.Attendance%
+                                </span>
+
+                                <div class="metric-track">
+                                    <div class="metric-fill @(studentRecord.Attendance < 75 ? "danger" : "healthy")"
+                                         style="@GetProgressStyle(studentRecord.Attendance)">
+                                    </div>
+                                </div>
+                            </td>
+
+                            <td>@studentRecord.Assessment%</td>
+
+                            <td>
+                                <strong>
+                                    @result.Score.ToString("0.0")
+                                </strong>
+                            </td>
+
+                            <td>
+                                <span class="risk-badge @result.Band.ToLowerInvariant()">
+                                    @result.Band
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="factor-text">
+                                    @GetTopFactors(result)
+                                </span>
+                            </td>
+
+                        </tr>
+                    }
+
+                    @if (!FilteredStudents.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="empty-state">
+                                No students match your search or risk filter.
+                            </td>
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <div class="table-footer">
+            <span>
+                Showing @FilteredStudents.Count() of
+                @TotalStudents students
+            </span>
+
+            <span>
+                Model @RiskScoringService.ModelVersion
+            </span>
+        </div>
+
+    </section>
+
+    <!-- Workflow Overview -->
+    <section class="dashboard-panel">
+
+        <div class="panel-heading">
+            <div>
+                <h3>Mentoring Workflow Summary</h3>
+                <p>
+                    Current intervention status from the shared service
+                </p>
+            </div>
+
+            <span class="panel-tag">Shared Workflow</span>
+        </div>
+
+        <div class="stats-grid">
+
+            <div class="stat-card">
+                <div class="stat-top">
+                    <span>Total Cases</span>
+                </div>
+
+                <h2>@Workflow.GetTotalInterventionCount()</h2>
+                <p>All interventions</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-top">
+                    <span>Scheduled</span>
+                </div>
+
+                <h2>@Workflow.GetScheduledInterventionCount()</h2>
+                <p>Planned mentoring meetings</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-top">
+                    <span>In Progress</span>
+                </div>
+
+                <h2>@Workflow.GetInProgressInterventionCount()</h2>
+                <p>Support plans underway</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-top">
+                    <span>Completed</span>
+                </div>
+
+                <h2>@Workflow.GetCompletedInterventionCount()</h2>
+                <p>Completed mentoring activities</p>
+            </div>
+
+        </div>
+    </section>
+
+    <div class="dashboard-notice">
+
+        <strong>Transparent Academic Monitoring</strong>
+
+        <p>
+            Student risk scores use the shared demonstration
+            scoring engine. Alerts and intervention records are
+            now obtained from AcademicWorkflowService.
+
+            All records are synthetic and stored in memory.
+            These classifications are not validated predictions
+            and should only support responsible academic mentoring.
+        </p>
+
+    </div>
+
+</div>
+
+@code {
+
+    private string SearchText = "";
+    private string SelectedRisk = "All";
+
+    // Shared student records.
+    private IReadOnlyList<Student> StudentRecords =>
+        AcademicData.GetAllStudents();
+
+    private int TotalStudents =>
+        StudentRecords.Count;
+
+    private static RiskWeights DefaultWeights =>
+        RiskWeights.Default;
+
+    // Shared risk calculations.
+    private RiskScoreResult CalculateRisk(Student studentRecord)
+    {
+        return RiskScoringService.Calculate(
+            studentRecord,
+            DefaultWeights
+        );
+    }
+
+    private int CountRiskBand(string riskBand)
+    {
+        return StudentRecords.Count(record =>
+            CalculateRisk(record).Band == riskBand
+        );
+    }
+
+    private int HighRiskCount =>
+        CountRiskBand("High");
+
+    private int ModerateRiskCount =>
+        CountRiskBand("Moderate");
+
+    private int LowRiskCount =>
+        CountRiskBand("Low");
+
+    private double AverageAttendance =>
+        AcademicData.GetAverageAttendance();
+
+    private double AverageAssessment =>
+        AcademicData.GetAverageAssessment();
+
+    // Workflow statistics are no longer hardcoded.
+    private int PendingAlertCount =>
+        Workflow.GetPendingAlertCount();
+
+    private int ActiveInterventionCount =>
+        Workflow.GetActiveInterventionCount();
+
+    // Recent alerts come directly from the shared service.
+    private IReadOnlyList<AcademicAlert> RecentAlerts =>
+        Workflow.GetAllAlerts()
+            .Take(4)
+            .ToList();
+
+    private double LowPercent =>
+        TotalStudents == 0
+            ? 0
+            : LowRiskCount * 100.0 / TotalStudents;
+
+    private double ModeratePercent =>
+        TotalStudents == 0
+            ? 0
+            : ModerateRiskCount * 100.0 / TotalStudents;
+
+    private string DonutStyle
+    {
+        get
+        {
+            string low = LowPercent.ToString(
+                "0.##",
+                CultureInfo.InvariantCulture
+            );
+
+            string moderate = ModeratePercent.ToString(
+                "0.##",
+                CultureInfo.InvariantCulture
+            );
+
+            return $"--low:{low}%;--moderate:{moderate}%;";
+        }
+    }
+
+    private IEnumerable<Student> FilteredStudents =>
+        StudentRecords
+            .Where(record =>
+                (
+                    SelectedRisk == "All" ||
+                    CalculateRisk(record).Band == SelectedRisk
+                )
+                &&
+                (
+                    string.IsNullOrWhiteSpace(SearchText) ||
+                    record.Name.Contains(
+                        SearchText,
+                        StringComparison.OrdinalIgnoreCase
+                    ) ||
+                    record.Id.Contains(
+                        SearchText,
+                        StringComparison.OrdinalIgnoreCase
+                    ) ||
+                    record.Department.Contains(
+                        SearchText,
+                        StringComparison.OrdinalIgnoreCase
+                    )
+                )
+            )
+            .OrderByDescending(record =>
+                CalculateRisk(record).Score
+            );
+
+    private static string GetInitials(string fullName)
+    {
+        return string.Concat(
+            fullName.Split(
+                ' ',
+                StringSplitOptions.RemoveEmptyEntries
+            )
+            .Take(2)
+            .Select(part => part[0])
+        );
+    }
+
+    private static string GetProgressStyle(int value)
+    {
+        int safeValue = Math.Clamp(value, 0, 100);
+
+        return $"width:{safeValue.ToString(CultureInfo.InvariantCulture)}%;";
+    }
+
+    private static string GetTopFactors(RiskScoreResult result)
+    {
+        var relevantFactors = result.Contributions
+            .Where(item =>
+                item.IndicatorRisk >= 30 &&
+                item.Contribution > 0
+            )
+            .Take(2)
+            .Select(item => item.Name)
+            .ToList();
+
+        return relevantFactors.Count == 0
+            ? "No major contributing factors"
+            : string.Join(", ", relevantFactors);
+    }
+}

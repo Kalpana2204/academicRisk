@@ -1,0 +1,197 @@
+@{
+    ViewData["Title"] = "Runtime Platform & CoreCLR Execution Pipeline";
+}
+
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Platform Architecture</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Runtime Platform</li>
+        </ol>
+    </nav>
+    <h2 class="fw-bold mb-1">Runtime Platform &amp; Execution Pipeline</h2>
+    <p class="text-muted">Mastering the modern .NET ecosystem, version evolution, CLI commands, and execution pipeline.</p>
+</div>
+
+<!-- Section 1: Intro & Features -->
+<div class="card card-shadow p-4 mb-4">
+    <h4 class="fw-bold text-primary mb-3">1. Introduction to ASP.NET Core and its Features</h4>
+    <p>
+        <strong>ASP.NET Core</strong> is an open-source, cross-platform, high-performance framework developed by Microsoft 
+        for building modern, cloud-enabled, Internet-connected applications.
+    </p>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-primary">Cross-Platform</h6>
+                <p class="small text-muted mb-0">Runs seamlessly on Windows, Linux, and macOS without code modifications.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-success">Unified Programming Model</h6>
+                <p class="small text-muted mb-0">Blends MVC, Web API, and Minimal Endpoints into a single, cohesive framework.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-danger">Built-in Dependency Injection</h6>
+                <p class="small text-muted mb-0">First-class IoC container baked directly into the framework core.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-warning text-dark">Kestrel Web Server</h6>
+                <p class="small text-muted mb-0">Ultra-fast, asynchronous event-driven HTTP server capable of millions of RPS.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-info text-dark">Modular Middleware Pipeline</h6>
+                <p class="small text-muted mb-0">Lightweight request processing pipeline where you only pay for what you use.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-secondary">Cloud & Docker Ready</h6>
+                <p class="small text-muted mb-0">Designed natively for containerized microservices and cloud deployment.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 2: .NET Core vs .NET Framework -->
+<div class="card card-shadow p-4 mb-4">
+    <h4 class="fw-bold text-primary mb-3">2. Difference Between .NET Framework and .NET Core</h4>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Feature</th>
+                    <th>.NET Framework (Legacy)</th>
+                    <th>.NET Core / Modern .NET (.NET 5+)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Operating System</strong></td>
+                    <td>Windows only</td>
+                    <td><span class="badge bg-success">Cross-Platform</span> (Windows, Linux, macOS)</td>
+                </tr>
+                <tr>
+                    <td><strong>Architecture</strong></td>
+                    <td>Monolithic system-wide installation (GAC)</td>
+                    <td>Modular NuGet packages & self-contained runtime</td>
+                </tr>
+                <tr>
+                    <td><strong>Performance</strong></td>
+                    <td>Moderate</td>
+                    <td><span class="badge bg-primary">Extremely High</span> (Vectorization, Span&lt;T&gt;, RyuJIT)</td>
+                </tr>
+                <tr>
+                    <td><strong>Runtime Engine</strong></td>
+                    <td>CLR (Common Language Runtime)</td>
+                    <td>CoreCLR (Modern, high-efficiency runtime)</td>
+                </tr>
+                <tr>
+                    <td><strong>Source Code</strong></td>
+                    <td>Proprietary (Reference source only)</td>
+                    <td><span class="badge bg-info text-dark">100% Open Source</span> on GitHub</td>
+                </tr>
+                <tr>
+                    <td><strong>Deployment</strong></td>
+                    <td>Machine-wide; risk of DLL hell</td>
+                    <td>Side-by-side versions & Self-contained single-file publish</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Section 3: Version History -->
+<div class="card card-shadow p-4 mb-4">
+    <h4 class="fw-bold text-primary mb-3">3. ASP.NET Core & C# Version History</h4>
+    <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle">
+            <thead class="table-light">
+                <tr><th>Version</th><th>Release Year</th><th>Type</th><th>Key Architectural Milestones</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><strong>.NET Core 1.0</strong></td><td>2016</td><td>STS</td><td>First cross-platform release; modular ASP.NET Core rewrite</td></tr>
+                <tr><td><strong>.NET Core 2.0 / 2.1</strong></td><td>2017–2018</td><td>LTS</td><td>Span&lt;T&gt;, HttpClientFactory, Razor Pages introduced</td></tr>
+                <tr><td><strong>.NET Core 3.1</strong></td><td>2019</td><td>LTS</td><td>Blazor Server & WebAssembly, gRPC, Endpoint Routing</td></tr>
+                <tr><td><strong>.NET 5</strong></td><td>2020</td><td>STS</td><td>Unified platform; dropped "Core" naming convention; C# 9 Records</td></tr>
+                <tr><td><strong>.NET 6</strong></td><td>2021</td><td>LTS</td><td>Minimal APIs, Hot Reload, C# 10 global usings</td></tr>
+                <tr><td><strong>.NET 8</strong></td><td>2023</td><td>LTS</td><td>Full Blazor unification (SSR + Interactive), native AOT compilation</td></tr>
+                <tr><td><strong>.NET 10 (Current)</strong></td><td>2025–2026</td><td>LTS</td><td>Latest Long-Term Support, high performance Roslyn compiler & runtime</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Section 4: NET CLI Commands -->
+<div class="card card-shadow p-4 mb-4">
+    <h4 class="fw-bold text-primary mb-3">4. Introduction to .NET CLI & Essential CLI Commands</h4>
+    <p>The .NET Command-Line Interface (CLI) is a cross-platform toolchain for developing, building, running, and publishing .NET applications.</p>
+    <div class="table-responsive">
+        <table class="table table-sm table-bordered">
+            <thead class="table-light"><tr><th>Command</th><th>Purpose & Example</th></tr></thead>
+            <tbody>
+                <tr><td><code>dotnet new &lt;template&gt;</code></td><td>Initializes a new project (e.g. <code>dotnet new mvc -n MyMvcApp</code>)</td></tr>
+                <tr><td><code>dotnet restore</code></td><td>Restores dependencies and project-specific tools defined in csproj</td></tr>
+                <tr><td><code>dotnet build</code></td><td>Compiles project source code and assets into binary DLL assembly</td></tr>
+                <tr><td><code>dotnet run</code></td><td>Builds and runs the web application immediately</td></tr>
+                <tr><td><code>dotnet watch</code></td><td>Runs application with file-watcher and Hot Reload on code edit</td></tr>
+                <tr><td><code>dotnet test</code></td><td>Executes unit tests using runner (MSTest, xUnit, NUnit)</td></tr>
+                <tr><td><code>dotnet publish -c Release</code></td><td>Packages application and dependencies into a folder for deployment</td></tr>
+                <tr><td><code>dotnet add package &lt;name&gt;</code></td><td>Installs NuGet package into the project (e.g. <code>dotnet add package Dapper</code>)</td></tr>
+                <tr><td><code>dotnet ef migrations add</code></td><td>Entity Framework Core CLI for generating code-first database migrations</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Section 5: C# Code Execution Pipeline -->
+<div class="card card-shadow p-4 mb-4">
+    <h4 class="fw-bold text-primary mb-3">5. C# Code Execution & Compilation Pipeline</h4>
+    <p>C# is a managed language. The compilation and execution flow operates through two main stages:</p>
+    
+    <div class="p-3 bg-dark text-white rounded mb-3 small" style="font-family: monospace;">
+        [ C# Source Code (.cs) ]<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&darr; (Compiled by Roslyn C# Compiler / csc.exe)<br />
+        [ Managed Assembly (.dll / .exe) ] &rarr; Contains Common Intermediate Language (CIL/MSIL) + Metadata<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&darr; (Loaded into Common Language Runtime - CoreCLR)<br />
+        [ Just-In-Time (JIT) Compiler / RyuJIT ] &rarr; Translates MSIL into Native CPU Instructions<br />
+        &nbsp;&nbsp;&nbsp;&nbsp;&darr;<br />
+        [ Native Machine Code ] &rarr; Executed directly by CPU with Garbage Collection & Memory Management!
+    </div>
+</div>
+
+<!-- Section 6: VS Code & Visual Studio Setup -->
+<div class="card card-shadow p-4">
+    <h4 class="fw-bold text-primary mb-3">6. Setting up Development Environment with VS Code & Visual Studio</h4>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold">Visual Studio Code Setup:</h6>
+                <ol class="small text-muted ps-3 mb-0">
+                    <li>Install <strong>VS Code</strong> from <a href="https://code.visualstudio.com" target="_blank">code.visualstudio.com</a>.</li>
+                    <li>Install the <strong>C# Dev Kit</strong> extension pack from Microsoft.</li>
+                    <li>Install the .NET 10 SDK via <code>winget install Microsoft.DotNet.SDK.10</code> or dotnet.microsoft.com.</li>
+                    <li>Configure <code>.vscode/launch.json</code> and <code>tasks.json</code> for debugging (included in this project).</li>
+                </ol>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold">Visual Studio 2022 Setup:</h6>
+                <ol class="small text-muted ps-3 mb-0">
+                    <li>Open <strong>Visual Studio Installer</strong>.</li>
+                    <li>Select the workload: <strong>ASP.NET and web development</strong>.</li>
+                    <li>Check .NET 10 runtime in Individual Components.</li>
+                    <li>Open the project <code>.csproj</code> or <code>.sln</code> to compile and launch with IIS Express or Kestrel.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>

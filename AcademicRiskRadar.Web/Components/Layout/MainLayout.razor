@@ -1,0 +1,125 @@
+﻿
+@inherits LayoutComponentBase
+
+<div class="radar-app">
+
+    <aside class="radar-sidebar">
+
+        <div class="radar-brand">
+            <div class="brand-icon">AR</div>
+
+            <div>
+                <strong>Academic Risk Radar</strong>
+                <small>Early Warning Platform</small>
+            </div>
+        </div>
+
+        <div class="sidebar-label">MAIN MENU</div>
+
+        <nav class="radar-navigation"
+             aria-label="Main navigation">
+
+            <NavLink href="/"
+                     Match="NavLinkMatch.All"
+                     class="radar-nav-link">
+                <span class="nav-symbol">▦</span>
+                <span>Dashboard</span>
+            </NavLink>
+
+            <NavLink href="/students"
+                     class="radar-nav-link">
+                <span class="nav-symbol">♙</span>
+                <span>Students</span>
+            </NavLink>
+
+            <NavLink href="/risk-analysis"
+                     class="radar-nav-link">
+                <span class="nav-symbol">◈</span>
+                <span>Risk Analysis</span>
+            </NavLink>
+
+            <NavLink href="/trend-detection"
+                     class="radar-nav-link">
+                <span class="nav-symbol">⌁</span>
+                <span>Trend Detection</span>
+            </NavLink>
+
+            <NavLink href="/alerts"
+                     class="radar-nav-link">
+                <span class="nav-symbol">♧</span>
+                <span>Alerts &amp; Inbox</span>
+            </NavLink>
+
+            <NavLink href="/interventions"
+                     class="radar-nav-link">
+                <span class="nav-symbol">▤</span>
+                <span>Interventions</span>
+            </NavLink>
+
+            <NavLink href="/reports"
+                     class="radar-nav-link">
+                <span class="nav-symbol">▥</span>
+                <span>Reports</span>
+            </NavLink>
+
+            <NavLink href="/settings"
+                     class="radar-nav-link">
+                <span class="nav-symbol">⚙</span>
+                <span>Settings</span>
+            </NavLink>
+
+        </nav>
+
+        <div class="sidebar-footer">
+
+            <div class="sidebar-avatar">AD</div>
+
+            <div>
+                <strong>Administrator</strong>
+                <small>Demo Workspace</small>
+            </div>
+
+        </div>
+
+    </aside>
+
+    <div class="radar-main">
+
+        <header class="radar-header">
+
+            <div class="header-heading">
+                <span class="header-eyebrow">
+                    ACADEMIC MONITORING
+                </span>
+
+                <h2>Academic Risk Radar</h2>
+            </div>
+
+            <div class="header-actions">
+                <span class="demo-status">
+                    <span class="status-dot"></span>
+                    Demo Mode
+                </span>
+
+                <div class="header-avatar">AD</div>
+            </div>
+
+        </header>
+
+        <main class="radar-content">
+            @Body
+        </main>
+
+        <footer class="radar-footer">
+            Academic Risk Radar · Academic Early-Warning Platform
+        </footer>
+
+    </div>
+
+</div>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unexpected error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">✕</span>
+</div>

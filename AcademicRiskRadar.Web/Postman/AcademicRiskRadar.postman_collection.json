@@ -1,0 +1,258 @@
+{
+  "info": {
+    "_postman_id": "b3e91f1a-4c22-4a90-84a1-academicrisk2026",
+    "name": "Academic Risk Radar - ASP.NET Core Web API Collection",
+    "description": "Comprehensive REST Web API testing collection for AcademicRiskRadar (Unit VI - Web API CRUD, Attribute & Convention Routing).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5010",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Students API (CRUD)",
+      "item": [
+        {
+          "name": "1. GET All Students (Filtered by Department)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/students?department=CSE&sortBy=risk_desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "students"],
+              "query": [
+                { "key": "department", "value": "CSE" },
+                { "key": "sortBy", "value": "risk_desc" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Response is an array\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(Array.isArray(jsonData)).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. GET Student by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/students/STU-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "students", "STU-001"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Student details verified\", function () {",
+                  "    var data = pm.response.json();",
+                  "    pm.expect(data.id).to.eql(\"STU-001\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. POST Create New Student",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentCode\": \"CSE-2026-999\",\n  \"name\": \"Aditya Verma\",\n  \"email\": \"aditya.verma@academicradar.edu\",\n  \"department\": \"CSE\",\n  \"program\": \"B.Tech Computer Science\",\n  \"semester\": 3,\n  \"section\": \"B\",\n  \"mentorName\": \"Dr. Rajesh Kumar\",\n  \"attendanceRate\": 62.5,\n  \"assessmentScore\": 56.0,\n  \"submittedAssignments\": 4,\n  \"totalAssignments\": 10,\n  \"lmsActivityHours\": 15.0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/students",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "students"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test(\"Has Location header\", function () {",
+                  "    pm.response.to.have.header(\"Location\");",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. PUT Update Existing Student",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"studentCode\": \"CSE-2024-001\",\n  \"name\": \"Aarav Sharma\",\n  \"email\": \"aarav.sharma@academicradar.edu\",\n  \"department\": \"CSE\",\n  \"program\": \"B.Tech Computer Science\",\n  \"semester\": 5,\n  \"section\": \"A\",\n  \"mentorName\": \"Dr. Rajesh Kumar\",\n  \"attendanceRate\": 65.0,\n  \"assessmentScore\": 58.0,\n  \"submittedAssignments\": 6,\n  \"totalAssignments\": 10,\n  \"lmsActivityHours\": 18.0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/students/STU-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "students", "STU-001"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204 No Content\", function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. DELETE Student by ID",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/students/STU-006",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "students", "STU-006"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Risk Engine API",
+      "item": [
+        {
+          "name": "1. POST Calculate Real-time Risk Score",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"attendanceRate\": 52.0,\n  \"assessmentScore\": 48.0,\n  \"assignmentCompletionPercentage\": 40.0,\n  \"lmsActivityHours\": 9.5,\n  \"attendanceWeight\": 35,\n  \"assessmentWeight\": 30,\n  \"assignmentWeight\": 20,\n  \"lmsWeight\": 15\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/risk/calculate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "risk", "calculate"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test(\"Calculates High/Critical Risk\", function () {",
+                  "    var res = pm.response.json();",
+                  "    pm.expect(res.riskScore).to.be.above(50);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. GET Department Risk Statistics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/risk/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "risk", "stats"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Convention-Based Routing API",
+      "item": [
+        {
+          "name": "1. GET Convention Route Student Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/convention/ConventionApi/GetStudentSummary?id=STU-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "convention", "ConventionApi", "GetStudentSummary"],
+              "query": [
+                { "key": "id", "value": "STU-001" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "2. GET Server Status via Convention Route",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/convention/ConventionApi/EchoServerStatus",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "convention", "ConventionApi", "EchoServerStatus"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

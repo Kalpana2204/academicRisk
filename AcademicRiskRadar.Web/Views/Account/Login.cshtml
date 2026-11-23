@@ -1,0 +1,80 @@
+@model AcademicRiskRadar.Web.Models.ViewModels.LoginViewModel
+
+@{
+    ViewData["Title"] = "User Authentication & Sign In";
+}
+
+<div class="row justify-content-center py-3">
+    <div class="col-lg-5 col-md-7">
+        <div class="card card-shadow border-0 rounded-4 p-4 p-md-5 mb-4">
+            <div class="text-center mb-4">
+                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-1 mb-2 rounded-pill fw-semibold">Institutional Portal</span>
+                <h2 class="fw-bold text-dark mb-1">Institutional Sign In</h2>
+                <p class="text-muted small">Sign in with your registered institutional credentials</p>
+            </div>
+
+            <form asp-action="Login" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="ReturnUrl" />
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 small" role="alert"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Email" class="form-label fw-semibold small">Email Address</label>
+                    <input asp-for="Email" class="form-control rounded-3" placeholder="user@academicradar.edu" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label fw-semibold small">Password</label>
+                    <input asp-for="Password" class="form-control rounded-3" type="password" placeholder="••••••••" />
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+
+                <div class="mb-4 form-check">
+                    <input asp-for="RememberMe" class="form-check-input" />
+                    <label asp-for="RememberMe" class="form-check-label small text-muted">Remember this session on this computer</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 fw-bold py-2 rounded-3 shadow-sm mb-3">
+                    Sign In to Portal &rarr;
+                </button>
+            </form>
+
+            <!-- Don't have an account prompt -->
+            <div class="bg-light p-3 rounded-3 text-center border">
+                <p class="mb-2 fw-semibold text-dark small">Don't have an institutional account?</p>
+                <div class="d-flex justify-content-center gap-2">
+                    <a asp-action="Register" asp-route-returnUrl="@Model.ReturnUrl" class="btn btn-outline-primary btn-sm px-3 fw-bold rounded-pill">
+                        Create New Account &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Demo Accounts Box -->
+        <div class="card card-shadow border-0 rounded-4 p-4 border-start border-4 border-info">
+            <h6 class="fw-bold mb-1">⚡ Quick One-Click Simulated Role Logins</h6>
+            <p class="text-muted small mb-3">Or click any credential below to authenticate immediately with pre-configured demo profiles:</p>
+
+            <div class="d-grid gap-2">
+                <a asp-action="QuickLogin" asp-route-role="Admin" asp-route-returnUrl="@Model.ReturnUrl" class="btn btn-outline-danger btn-sm text-start p-2 rounded-3">
+                    <strong>👑 Administrator</strong> (Dean Robert Vance)
+                    <div class="text-muted small" style="font-size: 0.72rem;">Full administrative oversight, risk policies &amp; SQL data center</div>
+                </a>
+                <a asp-action="QuickLogin" asp-route-role="Faculty" asp-route-returnUrl="@Model.ReturnUrl" class="btn btn-outline-primary btn-sm text-start p-2 rounded-3">
+                    <strong>👨‍🏫 Faculty Mentor</strong> (Dr. Rajesh Kumar)
+                    <div class="text-muted small" style="font-size: 0.72rem;">Mentoring actions, student directory &amp; academic interventions</div>
+                </a>
+                <a asp-action="QuickLogin" asp-route-role="Student" asp-route-returnUrl="@Model.ReturnUrl" class="btn btn-outline-success btn-sm text-start p-2 rounded-3">
+                    <strong>🎓 Student</strong> (Aarav Sharma)
+                    <div class="text-muted small" style="font-size: 0.72rem;">Personal academic scorecard, attendance tracking &amp; risk factors</div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

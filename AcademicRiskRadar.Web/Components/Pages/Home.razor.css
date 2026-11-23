@@ -1,0 +1,739 @@
+
+/* ============================================
+   ACADEMIC RISK RADAR - PROFESSIONAL DASHBOARD
+   Typography, Spacing, Alignment and Hierarchy
+   ============================================ */
+
+.dashboard {
+    width: 100%;
+    max-width: 1560px;
+    margin: 0 auto;
+    color: #273750;
+    font-family: "Segoe UI", Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* ============================================
+   DASHBOARD HEADER
+   ============================================ */
+
+.dashboard-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 28px;
+}
+
+.dashboard-heading h1 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    line-height: 1.25;
+    font-weight: 750;
+    letter-spacing: -0.6px;
+    color: #172942;
+}
+
+.dashboard-heading p {
+    margin: 0;
+    color: #73849d;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.6;
+}
+
+.semester-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 11px 16px;
+    border-radius: 9px;
+    background: #eaf0ff;
+    color: #3558a3;
+    font-size: 12px;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+/* ============================================
+   KPI STATISTICS CARDS
+   ============================================ */
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 0;
+    min-height: 174px;
+    padding: 22px 23px;
+    border: 1px solid #e5eaf2;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 3px 12px rgba(31, 50, 84, 0.035);
+    box-sizing: border-box;
+}
+
+.stat-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.stat-top > span {
+    color: #63758f;
+    font-size: 13px;
+    line-height: 1.4;
+    font-weight: 600;
+}
+
+.stat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 11px;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.stat-icon.blue {
+    background: #eaf0ff;
+    color: #426de0;
+}
+
+.stat-icon.red {
+    background: #ffeaed;
+    color: #e35a6c;
+}
+
+.stat-icon.amber {
+    background: #fff3dd;
+    color: #c9922c;
+}
+
+.stat-icon.green {
+    background: #e3f7ed;
+    color: #18996c;
+}
+
+.stat-card h2 {
+    margin: 13px 0 4px;
+    color: #142b4b;
+    font-size: 36px;
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -1px;
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-card p {
+    margin: 0;
+    color: #8897aa;
+    font-size: 12px;
+    line-height: 1.5;
+    font-weight: 400;
+}
+
+/* ============================================
+   ANALYTICS LAYOUT
+   ============================================ */
+
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 22px;
+    margin-bottom: 24px;
+}
+
+.dashboard-panel {
+    min-width: 0;
+    margin-bottom: 24px;
+    padding: 25px;
+    border: 1px solid #e5eaf2;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 3px 12px rgba(31, 50, 84, 0.035);
+}
+
+.analytics-grid > .dashboard-panel {
+    margin-bottom: 0;
+}
+
+.panel-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.panel-heading h3 {
+    margin: 0 0 7px;
+    color: #223653;
+    font-size: 17px;
+    line-height: 1.4;
+    font-weight: 750;
+    letter-spacing: -0.2px;
+}
+
+.panel-heading p {
+    margin: 0;
+    color: #8493a8;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.panel-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #edf2ff;
+    color: #3f61b4;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* ============================================
+   RISK DISTRIBUTION
+   ============================================ */
+
+.distribution-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 32px;
+    min-height: 240px;
+    padding: 8px 0 15px;
+}
+
+.donut-chart {
+    --low: 40%;
+    --moderate: 30%;
+
+    width: 200px;
+    height: 200px;
+    flex-shrink: 0;
+    border-radius: 50%;
+
+    background: conic-gradient(
+        #20b986 0 var(--low),
+        #f2b544 var(--low)
+        calc(var(--low) + var(--moderate)),
+        #ed6472
+        calc(var(--low) + var(--moderate)) 100%
+    );
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.donut-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    width: 146px;
+    height: 146px;
+    border-radius: 50%;
+    background: #ffffff;
+}
+
+.donut-center strong {
+    color: #1e3555;
+    font-size: 38px;
+    line-height: 1.15;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+.donut-center span {
+    margin-top: 6px;
+    color: #8797ac;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.risk-legend {
+    flex: 1;
+    min-width: 175px;
+    max-width: 250px;
+}
+
+.legend-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 19px;
+}
+
+.legend-row:last-child {
+    margin-bottom: 0;
+}
+
+.legend-row > span {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    color: #5f718b;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.legend-row strong {
+    color: #243852;
+    font-size: 15px;
+    font-weight: 750;
+    font-variant-numeric: tabular-nums;
+}
+
+.legend-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.legend-dot.low {
+    background: #20b986;
+}
+
+.legend-dot.moderate {
+    background: #f2b544;
+}
+
+.legend-dot.high {
+    background: #ed6472;
+}
+
+/* ============================================
+   RECENT ACADEMIC ALERTS
+   ============================================ */
+
+.alerts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.alert-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px;
+    border: 1px solid #edf0f6;
+    border-radius: 11px;
+    background: #f8faff;
+}
+
+.alert-indicator {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 37px;
+    height: 37px;
+    min-width: 37px;
+    border-radius: 10px;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.alert-indicator.high {
+    background: #ffe9ed;
+    color: #d94b5c;
+}
+
+.alert-indicator.moderate {
+    background: #fff3df;
+    color: #b8811c;
+}
+
+.alert-information {
+    flex: 1;
+    min-width: 0;
+}
+
+.alert-information strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #263b59;
+    font-size: 13px;
+    line-height: 1.4;
+    font-weight: 700;
+}
+
+.alert-information p {
+    margin: 0 0 7px;
+    color: #667993;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.alert-information small {
+    display: block;
+    color: #8e9cb0;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.alert-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 10px;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.alert-status.pending {
+    background: #fff3df;
+    color: #ad7a20;
+}
+
+.alert-status.acknowledged {
+    background: #e2f7eb;
+    color: #14875e;
+}
+
+/* ============================================
+   STUDENT MONITORING TABLE
+   ============================================ */
+
+.students-panel {
+    padding: 0;
+    overflow: hidden;
+}
+
+.student-table-heading {
+    align-items: center;
+    padding: 25px 25px 0;
+}
+
+.table-tools {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.student-search,
+.risk-filter {
+    min-height: 41px;
+    padding: 10px 13px;
+    border: 1px solid #dce3ed;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #3b4e69;
+    font-family: inherit;
+    font-size: 12px;
+    outline: none;
+}
+
+.student-search {
+    min-width: 200px;
+}
+
+.student-search:focus,
+.risk-filter:focus {
+    border-color: #5076db;
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.student-table {
+    width: 100%;
+    min-width: 900px;
+    border-collapse: collapse;
+}
+
+.student-table thead {
+    background: #f8faff;
+}
+
+.student-table th {
+    padding: 16px 15px;
+    color: #77879e;
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.student-table td {
+    padding: 16px 15px;
+    border-top: 1px solid #edf0f5;
+    color: #526780;
+    font-size: 13px;
+    line-height: 1.5;
+    vertical-align: middle;
+}
+
+.student-table tbody tr:hover {
+    background: #fafcff;
+}
+
+.student-table td strong {
+    color: #2a3d59;
+    font-weight: 700;
+}
+
+.student-identity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.student-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 39px;
+    height: 39px;
+    min-width: 39px;
+    border-radius: 11px;
+    background: #e7eeff;
+    color: #3c60ab;
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.student-identity strong {
+    display: block;
+    color: #263a58;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.student-identity small {
+    display: block;
+    margin-top: 4px;
+    color: #8696aa;
+    font-size: 11px;
+}
+
+/* Attendance progress */
+
+.metric-value {
+    display: block;
+    margin-bottom: 8px;
+    color: #344862;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.metric-track {
+    width: 100%;
+    max-width: 125px;
+    height: 7px;
+    overflow: hidden;
+    border-radius: 20px;
+    background: #edf0f5;
+}
+
+.metric-fill {
+    height: 100%;
+    border-radius: 20px;
+}
+
+.metric-fill.healthy {
+    background: #20b986;
+}
+
+.metric-fill.danger {
+    background: #ed6472;
+}
+
+/* Risk badges */
+
+.risk-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 11px;
+    border-radius: 7px;
+    font-size: 11px;
+    font-weight: 750;
+    white-space: nowrap;
+}
+
+.risk-badge.high {
+    background: #ffe9ed;
+    color: #d94b5c;
+}
+
+.risk-badge.moderate {
+    background: #fff3df;
+    color: #ad7a20;
+}
+
+.risk-badge.low {
+    background: #e2f7eb;
+    color: #14875e;
+}
+
+.factor-text {
+    color: #667993;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.empty-state {
+    padding: 30px !important;
+    text-align: center;
+    color: #8292a7 !important;
+    font-size: 13px;
+}
+
+.table-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 18px 25px;
+    border-top: 1px solid #edf0f5;
+    color: #7c8da3;
+    font-size: 12px;
+}
+
+/* ============================================
+   MENTORING WORKFLOW SUMMARY
+   ============================================ */
+
+.dashboard-panel > .stats-grid {
+    margin-bottom: 0;
+}
+
+.dashboard-panel > .stats-grid .stat-card {
+    min-height: 140px;
+    padding: 19px;
+    background: #f8faff;
+    box-shadow: none;
+}
+
+.dashboard-panel > .stats-grid .stat-card h2 {
+    font-size: 29px;
+}
+
+/* ============================================
+   ACADEMIC RESPONSIBILITY NOTICE
+   ============================================ */
+
+.dashboard-notice {
+    margin-bottom: 20px;
+    padding: 20px 23px;
+    border-left: 4px solid #5275de;
+    border-radius: 9px;
+    background: #eff4ff;
+}
+
+.dashboard-notice strong {
+    display: block;
+    margin-bottom: 8px;
+    color: #35579a;
+    font-size: 13px;
+    font-weight: 750;
+}
+
+.dashboard-notice p {
+    margin: 0;
+    color: #637ca7;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+/* ============================================
+   RESPONSIVE LAYOUT
+   ============================================ */
+
+@media (max-width: 1250px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .analytics-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 750px) {
+    .dashboard-heading h1 {
+        font-size: 23px;
+    }
+
+    .dashboard-heading p {
+        font-size: 13px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .stat-card {
+        min-height: 148px;
+    }
+
+    .dashboard-panel {
+        padding: 18px;
+    }
+
+    .students-panel {
+        padding: 0;
+    }
+
+    .student-table-heading {
+        padding: 18px 18px 0;
+    }
+
+    .distribution-container {
+        flex-direction: column;
+        gap: 25px;
+    }
+
+    .risk-legend {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .table-tools {
+        width: 100%;
+    }
+
+    .student-search,
+    .risk-filter {
+        flex: 1;
+        min-width: 130px;
+    }
+
+    .table-footer {
+        padding: 16px 18px;
+    }
+}

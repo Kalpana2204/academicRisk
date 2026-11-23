@@ -1,0 +1,297 @@
+@{
+    ViewData["Title"] = "REST API Gateway & Developer Suite";
+}
+
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Platform Architecture</a></li>
+            <li class="breadcrumb-item active" aria-current="page">API Gateway</li>
+        </ol>
+    </nav>
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-1">REST API Gateway &amp; Developer Suite</h2>
+            <p class="text-muted mb-0">REST principles, Web API CRUD controllers, Attribute vs Convention routing, and Postman testing.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/Postman/AcademicRiskRadar.postman_collection.json" download class="btn btn-warning text-dark fw-bold">
+                📥 Download Postman Collection
+            </a>
+            <a href="/api/students" target="_blank" class="btn btn-primary fw-bold">
+                🌐 Open Live JSON API &rarr;
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Section 1: REST Architecture Principles -->
+<div class="card card-shadow p-4 mb-4">
+    <h4 class="fw-bold text-primary mb-3">1. Introduction to REST Architecture & Core Principles</h4>
+    <p>
+        <strong>Representational State Transfer (REST)</strong> is a software architectural style that defines a set of 
+        constraints for building scalable, lightweight web services using the HTTP protocol.
+    </p>
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-primary">1. Stateless</h6>
+                <p class="small text-muted mb-0">Each request from client to server must contain all necessary context. No client session is stored on the server.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-success">2. Client-Server Separation</h6>
+                <p class="small text-muted mb-0">Separation of UI concerns from data storage concerns. Allows mobile, web, and desktop clients to share the same backend.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-danger">3. Uniform Interface</h6>
+                <p class="small text-muted mb-0">Resources identified using URIs (e.g. <code>/api/students</code>) and manipulated using standard HTTP verbs.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-warning text-dark">4. Cacheable</h6>
+                <p class="small text-muted mb-0">Responses must explicitly indicate whether they are cacheable to prevent redundant network roundtrips.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-info text-dark">5. Layered System</h6>
+                <p class="small text-muted mb-0">Architecture composed of hierarchical layers (proxies, load balancers, gateways) transparent to the client.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-secondary">6. Standard Status Codes</h6>
+                <p class="small text-muted mb-0">Communicates state: <code>200 OK</code>, <code>201 Created</code>, <code>204 No Content</code>, <code>400 Bad Request</code>, <code>404 Not Found</code>.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 2: Routing: Convention vs Attribute Routing -->
+<div class="card card-shadow p-4 mb-4">
+    <h4 class="fw-bold text-primary mb-3">2. Routing: Convention Routing vs Attribute Routing</h4>
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="p-3 bg-light rounded border h-100">
+                <h5 class="fw-bold text-primary">A. Attribute Routing (Preferred for Web API)</h5>
+                <p class="small text-muted">
+                    Routes are defined directly above controller classes and action methods using C# attributes.
+                </p>
+                <div class="bg-white p-2 rounded border small font-monospace mb-2">
+                    [ApiController]<br />
+                    [Route("api/students")]<br />
+                    public class StudentsApiController : ControllerBase<br />
+                    {<br />
+                    &nbsp;&nbsp;[HttpGet("{id}")]<br />
+                    &nbsp;&nbsp;public IActionResult GetById(string id) { ... }<br />
+                    }
+                </div>
+                <div class="small">
+                    <strong>URL:</strong> <code>/api/students/STU-001</code><br />
+                    <strong>Pros:</strong> High precision, supports route constraints (<code>{id:int}</code>), essential for RESTful APIs.
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="p-3 bg-light rounded border h-100">
+                <h5 class="fw-bold text-success">B. Convention-Based Routing (Traditional MVC)</h5>
+                <p class="small text-muted">
+                    Routes are configured centrally in <code>Program.cs</code> via URL pattern template.
+                </p>
+                <div class="bg-white p-2 rounded border small font-monospace mb-2">
+                    app.MapControllerRoute(<br />
+                    &nbsp;&nbsp;name: "api_convention",<br />
+                    &nbsp;&nbsp;pattern: "api/convention/{controller}/{action}/{id?}"<br />
+                    );
+                </div>
+                <div class="small">
+                    <strong>URL:</strong> <code>/api/convention/ConventionApi/GetStudentSummary?id=STU-001</code><br />
+                    <strong>Pros:</strong> Enforces universal URL patterns across classic MVC controllers.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 3: Web API CRUD Operations -->
+<div class="card card-shadow p-4 mb-4">
+    <h4 class="fw-bold text-primary mb-3">3. ASP.NET Web API CRUD Endpoints in AcademicRiskRadar</h4>
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead class="table-light">
+                <tr><th>HTTP Verb</th><th>Endpoint URI</th><th>Controller Action</th><th>Description &amp; Status Code</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="badge bg-primary">GET</span></td>
+                    <td><code>/api/students</code></td>
+                    <td><code>GetAll([FromQuery] ...)</code></td>
+                    <td>Retrieves list of students with optional query filter (<code>200 OK</code>)</td>
+                </tr>
+                <tr>
+                    <td><span class="badge bg-primary">GET</span></td>
+                    <td><code>/api/students/{id}</code></td>
+                    <td><code>GetById(string id)</code></td>
+                    <td>Retrieves student profile by ID or StudentCode (<code>200 OK</code> or <code>404 Not Found</code>)</td>
+                </tr>
+                <tr>
+                    <td><span class="badge bg-success">POST</span></td>
+                    <td><code>/api/students</code></td>
+                    <td><code>Create([FromBody] StudentViewModel model)</code></td>
+                    <td>Registers new student with validation (<code>201 Created</code> with <code>Location</code> header)</td>
+                </tr>
+                <tr>
+                    <td><span class="badge bg-warning text-dark">PUT</span></td>
+                    <td><code>/api/students/{id}</code></td>
+                    <td><code>Update(string id, [FromBody] ...)</code></td>
+                    <td>Updates existing student attributes and recalculates risk (<code>204 No Content</code>)</td>
+                </tr>
+                <tr>
+                    <td><span class="badge bg-danger">DELETE</span></td>
+                    <td><code>/api/students/{id}</code></td>
+                    <td><code>Delete(string id)</code></td>
+                    <td>Deletes student record from database (<code>200 OK</code> or <code>404 Not Found</code>)</td>
+                </tr>
+                <tr>
+                    <td><span class="badge bg-success">POST</span></td>
+                    <td><code>/api/risk/calculate</code></td>
+                    <td><code>CalculateRisk([FromBody] ...)</code></td>
+                    <td>Calculates real-time risk score, band, and recommendations (<code>200 OK</code>)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Section 4: Live In-Browser Web API Tester -->
+<div class="card card-shadow p-4 mb-4 border-start border-4 border-info">
+    <h4 class="fw-bold text-info text-dark mb-2">4. Live In-Browser Web API Tester</h4>
+    <p class="text-muted small">Click any button below to dispatch live AJAX HTTP requests to the ASP.NET Core Web API controllers:</p>
+
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        <button type="button" class="btn btn-outline-primary btn-sm fw-bold" onclick="testApi('/api/students', 'GET')">
+            GET /api/students
+        </button>
+        <button type="button" class="btn btn-outline-primary btn-sm fw-bold" onclick="testApi('/api/students/STU-001', 'GET')">
+            GET /api/students/STU-001
+        </button>
+        <button type="button" class="btn btn-outline-success btn-sm fw-bold" onclick="testApi('/api/risk/stats', 'GET')">
+            GET /api/risk/stats
+        </button>
+        <button type="button" class="btn btn-outline-info text-dark btn-sm fw-bold" onclick="testConventionApi()">
+            GET /api/convention/... (Convention Route)
+        </button>
+        <button type="button" class="btn btn-outline-warning text-dark btn-sm fw-bold" onclick="testPostRisk()">
+            POST /api/risk/calculate (Payload Test)
+        </button>
+    </div>
+
+    <div class="p-3 bg-dark text-light rounded font-monospace small" style="min-height: 180px; max-height: 350px; overflow-y: auto;">
+        <div class="text-white-50 mb-1">// API Response Inspector</div>
+        <div id="apiStatusBadge" class="mb-2"></div>
+        <pre id="apiOutput" class="text-light mb-0"><code>Click any endpoint button above to test live execution...</code></pre>
+    </div>
+</div>
+
+<!-- Section 5: Testing with Postman -->
+<div class="card card-shadow p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="fw-bold text-primary mb-1">5. Testing Web API Using Postman</h4>
+            <p class="text-muted small mb-0">Automate and test REST endpoints using Postman Collections and environment variables.</p>
+        </div>
+        <a href="/Postman/AcademicRiskRadar.postman_collection.json" download class="btn btn-warning text-dark fw-bold">
+            📥 Download AcademicRiskRadar.postman_collection.json
+        </a>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold">Step 1: Import Collection</h6>
+                <p class="small text-muted mb-0">
+                    Open Postman &rarr; Click <strong>Import</strong> &rarr; Select the downloaded <code>AcademicRiskRadar.postman_collection.json</code> file.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold">Step 2: Set baseUrl Variable</h6>
+                <p class="small text-muted mb-0">
+                    The collection has a collection variable <code>{{baseUrl}}</code> set to <code>http://localhost:5000</code> or your active server port.
+                </p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold">Step 3: Run &amp; Assert Tests</h6>
+                <p class="small text-muted mb-0">
+                    Execute requests. Each request includes pre-scripted tests asserting <code>pm.response.to.have.status(200 / 201)</code> and validating JSON response fields!
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        async function testApi(url, method) {
+            const badge = document.getElementById("apiStatusBadge");
+            const output = document.getElementById("apiOutput");
+            badge.innerHTML = `<span class="badge bg-secondary">Sending ${method} ${url}...</span>`;
+            
+            try {
+                const response = await fetch(url, { method: method });
+                const json = await response.json();
+                badge.innerHTML = `<span class="badge bg-success">HTTP ${response.status} ${response.statusText}</span> <span class="badge bg-dark">${method} ${url}</span>`;
+                output.textContent = JSON.stringify(json, null, 2);
+            } catch (err) {
+                badge.innerHTML = `<span class="badge bg-danger">Network Error</span>`;
+                output.textContent = err.toString();
+            }
+        }
+
+        async function testConventionApi() {
+            testApi('/api/convention/ConventionApi/GetStudentSummary?id=STU-001', 'GET');
+        }
+
+        async function testPostRisk() {
+            const badge = document.getElementById("apiStatusBadge");
+            const output = document.getElementById("apiOutput");
+            const url = "/api/risk/calculate";
+            badge.innerHTML = `<span class="badge bg-secondary">Sending POST ${url}...</span>`;
+
+            const payload = {
+                attendanceRate: 52.0,
+                assessmentScore: 48.0,
+                assignmentCompletionPercentage: 40.0,
+                lmsActivityHours: 8.5,
+                attendanceWeight: 35,
+                assessmentWeight: 30,
+                assignmentWeight: 20,
+                lmsWeight: 15
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const json = await response.json();
+                badge.innerHTML = `<span class="badge bg-success">HTTP ${response.status} ${response.statusText}</span> <span class="badge bg-dark">POST ${url}</span>`;
+                output.textContent = JSON.stringify(json, null, 2);
+            } catch (err) {
+                badge.innerHTML = `<span class="badge bg-danger">Network Error</span>`;
+                output.textContent = err.toString();
+            }
+        }
+    </script>
+}

@@ -1,0 +1,715 @@
+
+@page "/interventions"
+@rendermode InteractiveServer
+@using System.Linq
+@using AcademicRiskRadar.Web.Services
+@inject AcademicWorkflowService Workflow
+@inject AcademicDataService AcademicData
+
+<PageTitle>Interventions | Academic Risk Radar</PageTitle>
+
+<div class="interventions-page">
+
+    <!-- Page Heading -->
+    <div class="page-heading">
+        <div>
+            <h1>Mentoring Interventions</h1>
+            <p>
+                Schedule mentoring sessions, manage academic
+                action plans and monitor student support.
+            </p>
+        </div>
+
+        <button type="button"
+                class="primary-button"
+                @onclick="ToggleCreateForm">
+            @(ShowCreateForm ? "Close Form" : "+ New Intervention")
+        </button>
+    </div>
+
+    <div class="demo-notice">
+        Shared workflow demo — interventions are managed
+        through AcademicWorkflowService. Changes remain
+        in memory until database persistence is implemented.
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <span>Total Interventions</span>
+            <strong>
+                @Workflow.GetTotalInterventionCount()
+            </strong>
+            <small>All mentoring cases</small>
+        </div>
+
+        <div class="stat-card">
+            <span>Scheduled</span>
+            <strong class="blue">
+                @Workflow.GetScheduledInterventionCount()
+            </strong>
+            <small>Meetings planned</small>
+        </div>
+
+        <div class="stat-card">
+            <span>In Progress</span>
+            <strong class="amber">
+                @Workflow.GetInProgressInterventionCount()
+            </strong>
+            <small>Active support plans</small>
+        </div>
+
+        <div class="stat-card">
+            <span>Completed</span>
+            <strong class="green">
+                @Workflow.GetCompletedInterventionCount()
+            </strong>
+            <small>Completed mentoring activities</small>
+        </div>
+
+    </div>
+
+    <!-- Create Intervention Form -->
+    @if (ShowCreateForm)
+    {
+        <section class="intervention-panel create-panel">
+
+            <div class="section-heading">
+                <div>
+                    <h2>Create New Intervention</h2>
+                    <p>
+                        Create a mentoring support plan for a student.
+                    </p>
+                </div>
+            </div>
+
+            <form @onsubmit="CreateIntervention"
+                  @onsubmit:preventDefault="true">
+
+                <div class="form-grid">
+
+                    <!-- Student -->
+                    <div class="form-group">
+                        <label for="student-select">
+                            Student
+                        </label>
+
+                        <select id="student-select"
+                                @bind="NewStudentId"
+                                required>
+
+                            @foreach (var studentOption in StudentRecords)
+                            {
+                                <option value="@studentOption.Id">
+                                    @studentOption.Name
+                                    (@studentOption.Id)
+                                </option>
+                            }
+
+                        </select>
+                    </div>
+
+                    <!-- Mentor -->
+                    <div class="form-group">
+                        <label for="mentor-select">
+                            Assigned Faculty Mentor
+                        </label>
+
+                        <select id="mentor-select"
+                                @bind="NewMentor"
+                                required>
+
+                            @foreach (var mentorName in MentorOptions)
+                            {
+                                <option value="@mentorName">
+                                    @mentorName
+                                </option>
+                            }
+
+                        </select>
+                    </div>
+
+                    <!-- Meeting Date -->
+                    <div class="form-group">
+                        <label for="meeting-date">
+                            Meeting Date &amp; Time
+                        </label>
+
+                        <input id="meeting-date"
+                               type="datetime-local"
+                               @bind="NewMeetingDate"
+                               @bind:format="yyyy-MM-ddTHH:mm"
+                               required />
+                    </div>
+
+                    <!-- Priority -->
+                    <div class="form-group">
+                        <label for="priority-select">
+                            Intervention Priority
+                        </label>
+
+                        <select id="priority-select"
+                                @bind="NewPriority"
+                                required>
+                            <option value="High">High</option>
+                            <option value="Moderate">Moderate</option>
+                            <option value="Low">Low</option>
+                        </select>
+                    </div>
+
+                    <!-- Title -->
+                    <div class="form-group full-width">
+                        <label for="intervention-title">
+                            Intervention Title
+                        </label>
+
+                        <input id="intervention-title"
+                               type="text"
+                               maxlength="120"
+                               placeholder="Example: Attendance improvement discussion"
+                               @bind="NewTitle"
+                               required />
+                    </div>
+
+                    <!-- Action Plan -->
+                    <div class="form-group full-width">
+                        <label for="action-plan">
+                            Academic Support Action Plan
+                        </label>
+
+                        <textarea id="action-plan"
+                                  rows="4"
+                                  maxlength="1500"
+                                  placeholder="Describe mentoring objectives and support activities..."
+                                  @bind="NewActionPlan"
+                                  required></textarea>
+                    </div>
+
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(FormMessage))
+                {
+                    <p class="form-error" role="alert">
+                        @FormMessage
+                    </p>
+                }
+
+                <div class="form-actions">
+                    <button type="button"
+                            class="secondary-button"
+                            @onclick="ToggleCreateForm">
+                        Cancel
+                    </button>
+
+                    <button type="submit"
+                            class="primary-button">
+                        Create Intervention
+                    </button>
+                </div>
+
+            </form>
+        </section>
+    }
+
+    <!-- Intervention Directory -->
+    <section class="intervention-panel">
+
+        <div class="section-heading list-heading">
+
+            <div>
+                <h2>Intervention Records</h2>
+                <p>
+                    Review and manage all shared mentoring activities.
+                </p>
+            </div>
+
+            <div class="filter-controls">
+
+                <input type="search"
+                       placeholder="Search student or mentor..."
+                       aria-label="Search interventions"
+                       @bind="SearchText"
+                       @bind:event="oninput" />
+
+                <select aria-label="Filter intervention status"
+                        @bind="StatusFilter">
+                    <option value="All">All Statuses</option>
+                    <option value="Scheduled">Scheduled</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+
+            </div>
+
+        </div>
+
+        <div class="table-scroll">
+
+            <table class="intervention-table">
+
+                <thead>
+                    <tr>
+                        <th>INTERVENTION</th>
+                        <th>STUDENT</th>
+                        <th>MENTOR</th>
+                        <th>MEETING</th>
+                        <th>PRIORITY</th>
+                        <th>STATUS</th>
+                        <th>ACTION</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var interventionRecord in FilteredInterventions)
+                    {
+                        <tr class="@(SelectedInterventionId == interventionRecord.Id ? "selected-row" : "")">
+
+                            <td>
+                                <strong>
+                                    @interventionRecord.Title
+                                </strong>
+
+                                <small>
+                                    INT-@interventionRecord.Id.ToString("D3")
+                                </small>
+                            </td>
+
+                            <td>
+                                <strong>
+                                    @interventionRecord.StudentName
+                                </strong>
+
+                                <small>
+                                    @interventionRecord.StudentId
+                                </small>
+                            </td>
+
+                            <td>
+                                @interventionRecord.Mentor
+                            </td>
+
+                            <td>
+                                @interventionRecord.MeetingDate.ToString("dd MMM yyyy")
+
+                                <small>
+                                    @interventionRecord.MeetingDate.ToString("hh:mm tt")
+                                </small>
+                            </td>
+
+                            <td>
+                                <span class="priority-badge @GetCssClass(interventionRecord.Priority)">
+                                    @interventionRecord.Priority
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="status-badge @GetCssClass(interventionRecord.Status)">
+                                    @interventionRecord.Status
+                                </span>
+                            </td>
+
+                            <td>
+                                <button type="button"
+                                        class="view-button"
+                                        @onclick="() => SelectIntervention(interventionRecord.Id)">
+                                    Manage
+                                </button>
+                            </td>
+
+                        </tr>
+                    }
+
+                    @if (!FilteredInterventions.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="empty-state">
+                                No matching interventions found.
+                            </td>
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <div class="table-footer">
+            Showing @FilteredInterventions.Count() of
+            @Workflow.GetTotalInterventionCount()
+            interventions
+        </div>
+
+    </section>
+
+    <!-- Intervention Detail -->
+    @if (SelectedIntervention is { } selectedRecord)
+    {
+        <section class="intervention-panel detail-panel">
+
+            <div class="section-heading">
+
+                <div>
+                    <span class="eyebrow">
+                        INT-@selectedRecord.Id.ToString("D3")
+                    </span>
+
+                    <h2>@selectedRecord.Title</h2>
+
+                    <p>
+                        Mentoring intervention details and follow-up.
+                    </p>
+                </div>
+
+                <span class="status-badge @GetCssClass(selectedRecord.Status)">
+                    @selectedRecord.Status
+                </span>
+
+            </div>
+
+            <!-- Student and Meeting Information -->
+            <div class="details-grid">
+
+                <div class="detail-item">
+                    <span>Student</span>
+                    <strong>@selectedRecord.StudentName</strong>
+                    <small>@selectedRecord.StudentId</small>
+                </div>
+
+                <div class="detail-item">
+                    <span>Assigned Mentor</span>
+                    <strong>@selectedRecord.Mentor</strong>
+                </div>
+
+                <div class="detail-item">
+                    <span>Scheduled Meeting</span>
+                    <strong>
+                        @selectedRecord.MeetingDate.ToString("dd MMM yyyy, hh:mm tt")
+                    </strong>
+                </div>
+
+                <div class="detail-item">
+                    <span>Priority</span>
+                    <strong>@selectedRecord.Priority</strong>
+                </div>
+
+            </div>
+
+            <!-- Academic Support Plan -->
+            <div class="action-plan-box">
+                <h3>Academic Support Action Plan</h3>
+                <p>@selectedRecord.ActionPlan</p>
+            </div>
+
+            <div class="management-grid">
+
+                <!-- Status Management -->
+                <div class="management-section">
+
+                    <h3>Update Intervention Status</h3>
+
+                    <label for="update-status">
+                        Current Status
+                    </label>
+
+                    <select id="update-status"
+                            @bind="UpdatedStatus">
+                        <option value="Scheduled">Scheduled</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+
+                    <button type="button"
+                            class="primary-button"
+                            @onclick="SaveStatus">
+                        Save Status
+                    </button>
+
+                </div>
+
+                <!-- Mentor Notes -->
+                <div class="management-section">
+
+                    <h3>Mentor Follow-up Notes</h3>
+
+                    <label for="followup-notes">
+                        Record meeting outcomes or next steps
+                    </label>
+
+                    <textarea id="followup-notes"
+                              rows="4"
+                              maxlength="2000"
+                              placeholder="Enter mentor observations and next steps..."
+                              @bind="UpdatedNotes"></textarea>
+
+                    <button type="button"
+                            class="primary-button"
+                            @onclick="SaveNotes">
+                        Save Notes
+                    </button>
+
+                </div>
+
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(SaveMessage))
+            {
+                <div class="save-message" role="status">
+                    @SaveMessage
+                </div>
+            }
+
+            <!-- Saved Follow-up -->
+            <div class="followup-history">
+
+                <h3>Latest Saved Follow-up</h3>
+
+                @if (string.IsNullOrWhiteSpace(selectedRecord.Notes))
+                {
+                    <p>
+                        No follow-up notes have been recorded yet.
+                    </p>
+                }
+                else
+                {
+                    <p>@selectedRecord.Notes</p>
+                }
+
+                @if (selectedRecord.UpdatedAt.HasValue)
+                {
+                    <p>
+                        Last updated:
+                        @selectedRecord.UpdatedAt.Value.ToString(
+                            "dd MMM yyyy, hh:mm tt"
+                        )
+                    </p>
+                }
+
+            </div>
+
+            <div class="detail-notice">
+                Completing an intervention means the planned
+                mentoring activity has been completed.
+                It does not automatically mean the student's
+                academic risk has decreased.
+            </div>
+
+        </section>
+    }
+
+</div>
+
+@code {
+
+    private bool ShowCreateForm = false;
+
+    private string SearchText = "";
+    private string StatusFilter = "All";
+
+    private int SelectedInterventionId = 1;
+
+    // New intervention form
+    private string NewStudentId = "STU001";
+    private string NewMentor = "Dr. Rajesh Kumar";
+
+    // Strongly typed DateTime prevents the earlier
+    // Blazor datetime-local compilation error.
+    private DateTime NewMeetingDate =
+        DateTime.Today.AddDays(1).AddHours(10);
+
+    private string NewPriority = "Moderate";
+    private string NewTitle = "";
+    private string NewActionPlan = "";
+    private string FormMessage = "";
+
+    // Selected intervention management
+    private string UpdatedStatus = "Scheduled";
+    private string UpdatedNotes = "";
+    private string SaveMessage = "";
+
+    // Students from the shared academic service
+    private IReadOnlyList<Student> StudentRecords =>
+        AcademicData.GetAllStudents();
+
+    // Interventions from the shared workflow service
+    private AcademicIntervention? SelectedIntervention =>
+        Workflow.GetInterventionById(SelectedInterventionId);
+
+    private IEnumerable<AcademicIntervention> FilteredInterventions =>
+        Workflow.GetAllInterventions()
+            .Where(record =>
+                string.IsNullOrWhiteSpace(SearchText) ||
+                record.StudentName.Contains(
+                    SearchText,
+                    StringComparison.OrdinalIgnoreCase
+                ) ||
+                record.StudentId.Contains(
+                    SearchText,
+                    StringComparison.OrdinalIgnoreCase
+                ) ||
+                record.Mentor.Contains(
+                    SearchText,
+                    StringComparison.OrdinalIgnoreCase
+                ) ||
+                record.Title.Contains(
+                    SearchText,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
+            .Where(record =>
+                StatusFilter == "All" ||
+                record.Status == StatusFilter
+            );
+
+    private static readonly List<string> MentorOptions = new()
+    {
+        "Dr. Rajesh Kumar",
+        "Dr. Meera Singh",
+        "Dr. Amit Sharma",
+        "Dr. Pooja Mehta"
+    };
+
+    private void ToggleCreateForm()
+    {
+        ShowCreateForm = !ShowCreateForm;
+        FormMessage = "";
+    }
+
+    private void SelectIntervention(int interventionId)
+    {
+        SelectedInterventionId = interventionId;
+
+        if (SelectedIntervention is { } selectedRecord)
+        {
+            UpdatedStatus = selectedRecord.Status;
+            UpdatedNotes = selectedRecord.Notes;
+        }
+
+        SaveMessage = "";
+    }
+
+    private void CreateIntervention()
+    {
+        FormMessage = "";
+
+        var selectedStudent =
+            AcademicData.GetStudentById(NewStudentId);
+
+        if (selectedStudent is null)
+        {
+            FormMessage = "Please select a valid student.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(NewTitle) ||
+            string.IsNullOrWhiteSpace(NewActionPlan))
+        {
+            FormMessage =
+                "Intervention title and action plan are required.";
+            return;
+        }
+
+        if (!MentorOptions.Contains(NewMentor))
+        {
+            FormMessage = "Please select a valid mentor.";
+            return;
+        }
+
+        if (NewMeetingDate <= DateTime.Now)
+        {
+            FormMessage =
+                "Please choose a future meeting date and time.";
+            return;
+        }
+
+        if (NewPriority != "High" &&
+            NewPriority != "Moderate" &&
+            NewPriority != "Low")
+        {
+            FormMessage = "Invalid intervention priority.";
+            return;
+        }
+
+        try
+        {
+            var createdRecord = Workflow.CreateIntervention(
+                selectedStudent.Id,
+                selectedStudent.Name,
+                NewMentor,
+                NewMeetingDate,
+                NewPriority,
+                NewTitle.Trim(),
+                NewActionPlan.Trim()
+            );
+
+            // Automatically select the newly created case
+            SelectIntervention(createdRecord.Id);
+
+            // Reset the form
+            ShowCreateForm = false;
+            NewTitle = "";
+            NewActionPlan = "";
+            NewMeetingDate =
+                DateTime.Today.AddDays(1).AddHours(10);
+
+            SaveMessage =
+                "Intervention created in the shared workflow service.";
+        }
+        catch (ArgumentException exception)
+        {
+            FormMessage = exception.Message;
+        }
+    }
+
+    private void SaveStatus()
+    {
+        if (SelectedIntervention is null)
+        {
+            SaveMessage = "No intervention selected.";
+            return;
+        }
+
+        bool updated = Workflow.UpdateInterventionStatus(
+            SelectedInterventionId,
+            UpdatedStatus
+        );
+
+        SaveMessage = updated
+            ? "Intervention status updated successfully."
+            : "Unable to update the intervention status.";
+    }
+
+    private void SaveNotes()
+    {
+        if (SelectedIntervention is null)
+        {
+            SaveMessage = "No intervention selected.";
+            return;
+        }
+
+        bool updated = Workflow.UpdateInterventionNotes(
+            SelectedInterventionId,
+            UpdatedNotes
+        );
+
+        SaveMessage = updated
+            ? "Mentor follow-up notes saved successfully."
+            : "Unable to save follow-up notes.";
+    }
+
+    private static string GetCssClass(string value)
+    {
+        return value.ToLowerInvariant().Replace(" ", "-");
+    }
+
+    protected override void OnInitialized()
+    {
+        // Populate the initial editor state from
+        // the first demonstration intervention.
+        SelectIntervention(SelectedInterventionId);
+    }
+}

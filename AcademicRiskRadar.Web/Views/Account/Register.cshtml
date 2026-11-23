@@ -1,0 +1,223 @@
+@model AcademicRiskRadar.Web.Models.ViewModels.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Account Registration";
+}
+
+<div class="row justify-content-center py-3">
+    <div class="col-lg-7 col-md-9">
+        <div class="card card-shadow border-0 rounded-4 p-4 p-md-5 mb-4">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-1 mb-2 rounded-pill fw-semibold">Institutional Enrollment</span>
+                <h2 class="fw-bold text-dark mb-1">Create Institutional Account</h2>
+                <p class="text-muted small">Select your role to configure your academic portal access and privileges</p>
+            </div>
+
+            <!-- Form -->
+            <form asp-action="Register" method="post" id="registerForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="ReturnUrl" />
+                <input type="hidden" asp-for="Role" id="selectedRoleInput" />
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 small" role="alert"></div>
+
+                <!-- Role Selector Tiles -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold small text-uppercase text-muted">Select Your Role</label>
+                    <div class="row g-2">
+                        <div class="col-4">
+                            <div class="role-card text-center p-3 rounded-3 border @(Model.Role == "Student" ? "border-primary bg-primary bg-opacity-10 shadow-sm" : "border-light-subtle bg-white")"
+                                 onclick="selectRole('Student')" id="roleCardStudent" role="button" style="cursor: pointer; transition: all 0.2s;">
+                                <div class="fs-3 mb-1">🎓</div>
+                                <div class="fw-bold text-dark small">Student</div>
+                                <div class="text-muted" style="font-size: 0.7rem;">Learning &amp; Risk Insights</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="role-card text-center p-3 rounded-3 border @(Model.Role == "Faculty" ? "border-primary bg-primary bg-opacity-10 shadow-sm" : "border-light-subtle bg-white")"
+                                 onclick="selectRole('Faculty')" id="roleCardFaculty" role="button" style="cursor: pointer; transition: all 0.2s;">
+                                <div class="fs-3 mb-1">👨‍🏫</div>
+                                <div class="fw-bold text-dark small">Faculty</div>
+                                <div class="text-muted" style="font-size: 0.7rem;">Mentoring &amp; Risk Tracking</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="role-card text-center p-3 rounded-3 border @(Model.Role == "Admin" ? "border-primary bg-primary bg-opacity-10 shadow-sm" : "border-light-subtle bg-white")"
+                                 onclick="selectRole('Admin')" id="roleCardAdmin" role="button" style="cursor: pointer; transition: all 0.2s;">
+                                <div class="fs-3 mb-1">👑</div>
+                                <div class="fw-bold text-dark small">Admin</div>
+                                <div class="text-muted" style="font-size: 0.7rem;">Full Institutional Oversight</div>
+                            </div>
+                        </div>
+                    </div>
+                    <span asp-validation-for="Role" class="text-danger small"></span>
+                </div>
+
+                <!-- Core Information Grid -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="FullName" class="form-label fw-semibold small">Full Legal Name</label>
+                        <input asp-for="FullName" class="form-control rounded-3" placeholder="e.g. Aarav Sharma" />
+                        <span asp-validation-for="FullName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Email" class="form-label fw-semibold small">Institutional Email Address</label>
+                        <input asp-for="Email" class="form-control rounded-3" placeholder="name@academicradar.edu" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <!-- Department Selector -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="Department" class="form-label fw-semibold small">Department / Faculty</label>
+                        <select asp-for="Department" class="form-select rounded-3">
+                            <option value="CSE">Computer Science &amp; Engineering (CSE)</option>
+                            <option value="ECE">Electronics &amp; Communication (ECE)</option>
+                            <option value="MECH">Mechanical Engineering (MECH)</option>
+                            <option value="IT">Information Technology (IT)</option>
+                            <option value="CIVIL">Civil Engineering (CIVIL)</option>
+                        </select>
+                        <span asp-validation-for="Department" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Dynamic Student Code / Roll Number -->
+                    <div class="col-md-6" id="studentCodeContainer">
+                        <label asp-for="StudentCode" class="form-label fw-semibold small">Student Roll / Reg ID <span class="text-muted fw-normal">(Optional)</span></label>
+                        <input asp-for="StudentCode" class="form-control rounded-3" placeholder="Auto-generated if left blank" />
+                        <span asp-validation-for="StudentCode" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Dynamic Faculty Designation -->
+                    <div class="col-md-6 d-none" id="facultyDesignationContainer">
+                        <label asp-for="Designation" class="form-label fw-semibold small">Academic Designation</label>
+                        <select asp-for="Designation" class="form-select rounded-3">
+                            <option value="Assistant Professor">Assistant Professor</option>
+                            <option value="Associate Professor">Associate Professor</option>
+                            <option value="Professor &amp; HOD">Professor &amp; HOD</option>
+                            <option value="Dean of Academics">Dean of Academics</option>
+                            <option value="Adjunct Fellow">Adjunct Fellow</option>
+                        </select>
+                        <span asp-validation-for="Designation" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <!-- Dynamic Student Details (Semester & Program) -->
+                <div class="row g-3 mb-3" id="studentDetailsRow">
+                    <div class="col-md-6">
+                        <label asp-for="Semester" class="form-label fw-semibold small">Semester</label>
+                        <select asp-for="Semester" class="form-select rounded-3">
+                            <option value="1">Semester 1</option>
+                            <option value="2">Semester 2</option>
+                            <option value="3">Semester 3</option>
+                            <option value="4">Semester 4</option>
+                            <option value="5">Semester 5</option>
+                            <option value="6">Semester 6</option>
+                            <option value="7">Semester 7</option>
+                            <option value="8">Semester 8</option>
+                        </select>
+                        <span asp-validation-for="Semester" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Program" class="form-label fw-semibold small">Degree Program</label>
+                        <input asp-for="Program" class="form-control rounded-3" placeholder="e.g. B.Tech Computer Science" />
+                        <span asp-validation-for="Program" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <!-- Dynamic Faculty / Admin Office Room -->
+                <div class="row g-3 mb-3 d-none" id="staffOfficeRow">
+                    <div class="col-12">
+                        <label asp-for="OfficeRoom" class="form-label fw-semibold small">Office / Cabin Room Number</label>
+                        <input asp-for="OfficeRoom" class="form-control rounded-3" placeholder="e.g. CS-301 or Admin Block Room 102" />
+                        <span asp-validation-for="OfficeRoom" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <!-- Passwords -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="Password" class="form-label fw-semibold small">Password (Min. 6 characters)</label>
+                        <input asp-for="Password" class="form-control rounded-3" type="password" placeholder="••••••••" />
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="ConfirmPassword" class="form-label fw-semibold small">Confirm Password</label>
+                        <input asp-for="ConfirmPassword" class="form-control rounded-3" type="password" placeholder="••••••••" />
+                        <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary w-100 fw-bold py-2 rounded-3 shadow-sm mb-3">
+                    Complete Registration &amp; Enter Portal &rarr;
+                </button>
+
+                <!-- Switch to Sign In -->
+                <div class="text-center pt-2 border-top">
+                    <p class="text-muted small mb-0">
+                        Already have an institutional account?
+                        <a asp-action="Login" asp-route-returnUrl="@Model.ReturnUrl" class="text-primary fw-bold text-decoration-none">
+                            Sign in here &rarr;
+                        </a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function selectRole(role) {
+            document.getElementById('selectedRoleInput').value = role;
+
+            const cards = {
+                'Student': document.getElementById('roleCardStudent'),
+                'Faculty': document.getElementById('roleCardFaculty'),
+                'Admin': document.getElementById('roleCardAdmin')
+            };
+
+            for (const key in cards) {
+                if (key === role) {
+                    cards[key].classList.remove('border-light-subtle', 'bg-white');
+                    cards[key].classList.add('border-primary', 'bg-primary', 'bg-opacity-10', 'shadow-sm');
+                } else {
+                    cards[key].classList.remove('border-primary', 'bg-primary', 'bg-opacity-10', 'shadow-sm');
+                    cards[key].classList.add('border-light-subtle', 'bg-white');
+                }
+            }
+
+            const studentCode = document.getElementById('studentCodeContainer');
+            const studentDetails = document.getElementById('studentDetailsRow');
+            const facultyDesignation = document.getElementById('facultyDesignationContainer');
+            const staffOffice = document.getElementById('staffOfficeRow');
+
+            if (role === 'Student') {
+                studentCode.classList.remove('d-none');
+                studentDetails.classList.remove('d-none');
+                facultyDesignation.classList.add('d-none');
+                staffOffice.classList.add('d-none');
+            } else if (role === 'Faculty') {
+                studentCode.classList.add('d-none');
+                studentDetails.classList.add('d-none');
+                facultyDesignation.classList.remove('d-none');
+                staffOffice.classList.remove('d-none');
+            } else { // Admin
+                studentCode.classList.add('d-none');
+                studentDetails.classList.add('d-none');
+                facultyDesignation.classList.add('d-none');
+                staffOffice.classList.remove('d-none');
+            }
+        }
+
+        // Initialize state based on model
+        document.addEventListener('DOMContentLoaded', function () {
+            const initialRole = document.getElementById('selectedRoleInput').value || 'Student';
+            selectRole(initialRole);
+        });
+    </script>
+}

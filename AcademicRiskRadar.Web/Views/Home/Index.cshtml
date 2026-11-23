@@ -1,0 +1,357 @@
+@{
+    ViewData["Title"] = "Executive Overview & Academic Intelligence";
+    int total = ViewBag.TotalStudents ?? 6;
+    int highRisk = ViewBag.HighRiskCount ?? 3;
+    int interventions = ViewBag.TotalInterventions ?? 3;
+}
+
+<!-- Hero Executive Banner -->
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="p-4 p-lg-5 pro-hero">
+            <div class="d-flex flex-wrap justify-content-between align-items-center position-relative" style="z-index: 1;">
+                <div class="mb-3 mb-md-0">
+                    <div class="d-inline-flex align-items-center bg-white bg-opacity-20 px-3 py-1 rounded-pill small mb-3">
+                        <span class="badge bg-success rounded-circle p-1 me-2" style="width: 8px; height: 8px;"></span>
+                        <span class="text-white fw-semibold">Continuous Early Warning Engine &bull; Academic Year 2026–27</span>
+                    </div>
+                    <h1 class="display-6 fw-bold mb-2">Academic Risk Radar</h1>
+                    <p class="lead mb-0 text-white-50" style="max-width: 680px;">
+                        Comprehensive student risk detection, multi-factor performance scoring, and automated mentoring workflows for university excellence.
+                    </p>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a asp-controller="Students" asp-action="Create" class="btn btn-light fw-bold px-4 py-2 rounded-3 shadow-sm">
+                            + Add Student Record
+                        </a>
+                        <a asp-controller="Students" asp-action="Index" class="btn btn-outline-light fw-semibold px-4 py-2 rounded-3">
+                            Student Directory &rarr;
+                        </a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-light fw-bold px-4 py-2 rounded-3 shadow-sm">
+                            Register Account &rarr;
+                        </a>
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light fw-semibold px-4 py-2 rounded-3">
+                            Institutional Sign In
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- KPI Metric Cards Grid -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card pro-card-hover">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="text-muted small text-uppercase fw-bold">Total Monitored Cohort</span>
+                <div class="kpi-icon-wrap bg-primary bg-opacity-10 text-primary">👥</div>
+            </div>
+            <div class="kpi-value text-dark mb-1">@total</div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="kpi-trend bg-success bg-opacity-10 text-success">Active Cohort</span>
+                <span class="text-muted small">All departments</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card pro-card-hover">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="text-muted small text-uppercase fw-bold">At-Risk Students</span>
+                <div class="kpi-icon-wrap bg-danger bg-opacity-10 text-danger">⚠️</div>
+            </div>
+            <div class="kpi-value text-danger mb-1">@highRisk</div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="kpi-trend bg-danger bg-opacity-10 text-danger">Requires Action</span>
+                <span class="text-muted small">Score &ge; 50% threshold</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card pro-card-hover">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="text-muted small text-uppercase fw-bold">Active Interventions</span>
+                <div class="kpi-icon-wrap bg-warning bg-opacity-10 text-warning">🛡️</div>
+            </div>
+            <div class="kpi-value text-dark mb-1">@interventions</div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="kpi-trend bg-warning bg-opacity-20 text-dark">In Progress</span>
+                <span class="text-muted small">Faculty mentoring</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="kpi-card pro-card-hover">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="text-muted small text-uppercase fw-bold">Engine Latency</span>
+                <div class="kpi-icon-wrap bg-info bg-opacity-10 text-info">⚡</div>
+            </div>
+            <div class="kpi-value text-dark mb-1">1.8 <span class="fs-5 text-muted fw-normal">ms</span></div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="kpi-trend bg-info bg-opacity-10 text-primary">Ultra-Fast</span>
+                <span class="text-muted small">Real-time scoring</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Middle Section: Visual Risk Radar & Priority Interventions -->
+<div class="row g-4 mb-4">
+    <!-- Left: Cohort Distribution & Department Analytics -->
+    <div class="col-lg-7">
+        <div class="pro-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="fw-bold mb-1">Cohort Academic Risk Distribution</h5>
+                    <p class="text-muted small mb-0">Multi-factor indicators: Attendance (35%), Assessments (30%), Coursework (20%), LMS (15%)</p>
+                </div>
+                <a asp-controller="RiskAnalysis" asp-action="Index" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                    Engine Details &rarr;
+                </a>
+            </div>
+
+            <!-- Risk Progress Spectrum -->
+            <div class="mb-4">
+                <div class="d-flex justify-content-between small text-muted mb-1">
+                    <span>Critical Risk (&ge;70%)</span>
+                    <strong class="text-danger">1 Student (16.7%)</strong>
+                </div>
+                <div class="progress-thin mb-3">
+                    <div class="progress-bar bg-danger" style="width: 17%;"></div>
+                </div>
+
+                <div class="d-flex justify-content-between small text-muted mb-1">
+                    <span>High Risk (50%–69%)</span>
+                    <strong class="text-warning text-dark">2 Students (33.3%)</strong>
+                </div>
+                <div class="progress-thin mb-3">
+                    <div class="progress-bar bg-warning" style="width: 33%;"></div>
+                </div>
+
+                <div class="d-flex justify-content-between small text-muted mb-1">
+                    <span>Moderate Risk (30%–49%)</span>
+                    <strong class="text-primary">1 Student (16.7%)</strong>
+                </div>
+                <div class="progress-thin mb-3">
+                    <div class="progress-bar bg-primary" style="width: 17%;"></div>
+                </div>
+
+                <div class="d-flex justify-content-between small text-muted mb-1">
+                    <span>Low Risk (&lt;30%)</span>
+                    <strong class="text-success">2 Students (33.3%)</strong>
+                </div>
+                <div class="progress-thin">
+                    <div class="progress-bar bg-success" style="width: 33%;"></div>
+                </div>
+            </div>
+
+            <!-- Department Health Mini-Matrix -->
+            <h6 class="fw-bold text-uppercase small text-muted mb-2">Department Academic Health</h6>
+            <div class="table-responsive">
+                <table class="table table-sm pro-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Department</th>
+                            <th>Total Students</th>
+                            <th>Avg Attendance</th>
+                            <th>Avg Assessment</th>
+                            <th>Health Standing</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>CSE</strong> (Computer Science)</td>
+                            <td>3</td>
+                            <td>79.5%</td>
+                            <td>74.2%</td>
+                            <td><span class="badge bg-success bg-opacity-10 text-success">Good Standings</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>ECE</strong> (Electronics)</td>
+                            <td>1</td>
+                            <td class="text-danger fw-bold">48.0%</td>
+                            <td class="text-danger fw-bold">42.0%</td>
+                            <td><span class="badge bg-danger bg-opacity-10 text-danger">Immediate Review</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>MECH</strong> (Mechanical)</td>
+                            <td>1</td>
+                            <td>63.0%</td>
+                            <td>58.0%</td>
+                            <td><span class="badge bg-warning bg-opacity-10 text-dark">Moderate Alert</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>IT</strong> (Information Tech)</td>
+                            <td>1</td>
+                            <td>72.5%</td>
+                            <td>68.0%</td>
+                            <td><span class="badge bg-primary bg-opacity-10 text-primary">Stable</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right: High Priority Interventions -->
+    <div class="col-lg-5">
+        <div class="pro-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0">Priority Attention Required</h5>
+                <span class="badge bg-danger bg-opacity-10 text-danger px-2 py-1">Top Alerts</span>
+            </div>
+
+            <div class="d-flex flex-column gap-3">
+                <!-- Student 1 -->
+                <div class="p-3 rounded-3 border border-danger border-opacity-25 bg-danger bg-opacity-10">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <div>
+                            <span class="fw-bold text-danger">Rohan Mehta</span>
+                            <div class="text-muted small">ECE-2024-015 &bull; Semester 3</div>
+                        </div>
+                        <span class="risk-pill critical">Critical (79.4%)</span>
+                    </div>
+                    <p class="small text-muted mb-2">Severe attendance deficit (48%) and internal assessment lag (42%). Formal notification dispatched.</p>
+                    <div class="d-flex gap-2">
+                        <a asp-controller="Students" asp-action="Details" asp-route-id="STU-003" class="btn btn-danger btn-sm fw-semibold">
+                            View Scorecard &rarr;
+                        </a>
+                        <a asp-controller="RiskAnalysis" asp-action="LogIntervention" asp-route-studentId="STU-003" class="btn btn-outline-danger btn-sm">
+                            + Mentoring
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Student 2 -->
+                <div class="p-3 rounded-3 border border-warning border-opacity-25 bg-warning bg-opacity-10">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <div>
+                            <span class="fw-bold text-dark">Aarav Sharma</span>
+                            <div class="text-muted small">CSE-2024-001 &bull; Semester 5</div>
+                        </div>
+                        <span class="risk-pill high">High (67.5%)</span>
+                    </div>
+                    <p class="small text-muted mb-2">Attendance dropping across Database Systems (56%) and OS (60%). Peer tutoring assigned.</p>
+                    <div class="d-flex gap-2">
+                        <a asp-controller="Students" asp-action="Details" asp-route-id="STU-001" class="btn btn-warning text-dark btn-sm fw-semibold">
+                            View Scorecard &rarr;
+                        </a>
+                        <a asp-controller="RiskAnalysis" asp-action="LogIntervention" asp-route-studentId="STU-001" class="btn btn-outline-dark btn-sm">
+                            + Mentoring
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Student 3 -->
+                <div class="p-3 rounded-3 border border-secondary border-opacity-25 bg-light">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <div>
+                            <span class="fw-bold text-dark">Karan Singhania</span>
+                            <div class="text-muted small">MECH-2024-022 &bull; Semester 6</div>
+                        </div>
+                        <span class="risk-pill high">High (56.8%)</span>
+                    </div>
+                    <p class="small text-muted mb-2">Completed supplementary remedial classes for Thermodynamics II.</p>
+                    <a asp-controller="Students" asp-action="Details" asp-route-id="STU-005" class="btn btn-outline-secondary btn-sm">
+                        View Scorecard &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Section: Core Operations Grid -->
+<div class="d-flex justify-content-between align-items-center mb-3 mt-4">
+    <div>
+        <h4 class="fw-bold mb-1">Platform Operations &amp; Modules</h4>
+        <p class="text-muted small mb-0">Direct access to core academic monitoring and administration features</p>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Module 1: Student Directory -->
+    <div class="col-md-6 col-lg-3">
+        <div class="pro-card pro-card-hover p-4 h-100 d-flex flex-column">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="kpi-icon-wrap bg-primary bg-opacity-10 text-primary">📋</div>
+                <div>
+                    <h6 class="fw-bold mb-0">Student Records</h6>
+                    <small class="text-muted">Directory &amp; Profiles</small>
+                </div>
+            </div>
+            <p class="text-muted small flex-grow-1">
+                Manage student enrollment, monitor course performance, and update academic indicators.
+            </p>
+            <a asp-controller="Students" asp-action="Index" class="btn btn-outline-primary btn-sm rounded-pill fw-semibold">
+                Open Directory &rarr;
+            </a>
+        </div>
+    </div>
+
+    <!-- Module 2: Risk Scoring Engine -->
+    <div class="col-md-6 col-lg-3">
+        <div class="pro-card pro-card-hover p-4 h-100 d-flex flex-column">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="kpi-icon-wrap bg-danger bg-opacity-10 text-danger">⚡</div>
+                <div>
+                    <h6 class="fw-bold mb-0">Risk Engine</h6>
+                    <small class="text-muted">Predictive Scoring</small>
+                </div>
+            </div>
+            <p class="text-muted small flex-grow-1">
+                Compare multi-factor scoring against longitudinal trend-detection models in real time.
+            </p>
+            <a asp-controller="RiskAnalysis" asp-action="Index" class="btn btn-outline-danger btn-sm rounded-pill fw-semibold">
+                Run Risk Models &rarr;
+            </a>
+        </div>
+    </div>
+
+    <!-- Module 3: Database Studio -->
+    <div class="col-md-6 col-lg-3">
+        <div class="pro-card pro-card-hover p-4 h-100 d-flex flex-column">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="kpi-icon-wrap bg-success bg-opacity-10 text-success">🗄️</div>
+                <div>
+                    <h6 class="fw-bold mb-0">Data Center</h6>
+                    <small class="text-muted">Queries &amp; Analytics</small>
+                </div>
+            </div>
+            <p class="text-muted small flex-grow-1">
+                Execute relational queries, analyze department views, and run automated enrollment procedures.
+            </p>
+            <a asp-controller="SqlExplorer" asp-action="Index" class="btn btn-outline-success btn-sm rounded-pill fw-semibold">
+                Launch Console &rarr;
+            </a>
+        </div>
+    </div>
+
+    <!-- Module 4: REST API Gateway -->
+    <div class="col-md-6 col-lg-3">
+        <div class="pro-card pro-card-hover p-4 h-100 d-flex flex-column">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="kpi-icon-wrap bg-secondary bg-opacity-10 text-secondary">🌐</div>
+                <div>
+                    <h6 class="fw-bold mb-0">Developer API</h6>
+                    <small class="text-muted">JSON Integrations</small>
+                </div>
+            </div>
+            <p class="text-muted small flex-grow-1">
+                RESTful API endpoints for institutional LMS sync with pre-configured Postman test collection.
+            </p>
+            <a href="/api/students" target="_blank" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold">
+                Access Endpoints &rarr;
+            </a>
+        </div>
+    </div>
+</div>

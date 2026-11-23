@@ -1,0 +1,586 @@
+
+@page "/risk-analysis"
+@rendermode InteractiveServer
+@using System.Linq
+@using System.Globalization
+@using AcademicRiskRadar.Web.Services
+@inject AcademicDataService AcademicData
+
+<PageTitle>Risk Analysis | Academic Risk Radar</PageTitle>
+
+<div class="risk-page">
+
+    <div class="risk-heading">
+        <div>
+            <h1>Academic Risk Analysis</h1>
+            <p>
+                Explore centrally calculated academic risk,
+                contributing factors and configurable weights.
+            </p>
+        </div>
+
+        <span class="demo-label">
+            Model @RiskScoringService.ModelVersion
+        </span>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="risk-stats">
+
+        <div class="risk-stat-card">
+            <span>Students Analysed</span>
+            <strong>@StudentRecords.Count</strong>
+            <small>Shared academic records</small>
+        </div>
+
+        <div class="risk-stat-card">
+            <span>High Risk</span>
+            <strong class="stat-red">@HighRiskCount</strong>
+            <small>Priority for mentor review</small>
+        </div>
+
+        <div class="risk-stat-card">
+            <span>Moderate Risk</span>
+            <strong class="stat-amber">@ModerateRiskCount</strong>
+            <small>Closer monitoring recommended</small>
+        </div>
+
+        <div class="risk-stat-card">
+            <span>Low Risk</span>
+            <strong class="stat-green">@LowRiskCount</strong>
+            <small>Routine monitoring</small>
+        </div>
+
+    </div>
+
+    <div class="analysis-grid">
+
+        <!-- Scoring Configuration -->
+        <section class="risk-panel">
+
+            <div class="panel-title">
+                <h2>Scoring Configuration</h2>
+                <p>
+                    Adjust the relative importance of academic indicators.
+                </p>
+            </div>
+
+            <div class="weight-list">
+
+                <div class="weight-item">
+                    <div class="weight-heading">
+                        <label for="attendance-weight">
+                            Attendance
+                        </label>
+                        <strong>@AttendanceWeight</strong>
+                    </div>
+
+                    <input id="attendance-weight"
+                           type="range"
+                           min="0"
+                           max="100"
+                           step="5"
+                           @bind="AttendanceWeight"
+                           @bind:event="oninput" />
+
+                    <p>Lower attendance increases risk.</p>
+                </div>
+
+                <div class="weight-item">
+                    <div class="weight-heading">
+                        <label for="assessment-weight">
+                            Assessment Performance
+                        </label>
+                        <strong>@AssessmentWeight</strong>
+                    </div>
+
+                    <input id="assessment-weight"
+                           type="range"
+                           min="0"
+                           max="100"
+                           step="5"
+                           @bind="AssessmentWeight"
+                           @bind:event="oninput" />
+
+                    <p>Lower assessment marks increase risk.</p>
+                </div>
+
+                <div class="weight-item">
+                    <div class="weight-heading">
+                        <label for="assignment-weight">
+                            Assignment Completion
+                        </label>
+                        <strong>@AssignmentWeight</strong>
+                    </div>
+
+                    <input id="assignment-weight"
+                           type="range"
+                           min="0"
+                           max="100"
+                           step="5"
+                           @bind="AssignmentWeight"
+                           @bind:event="oninput" />
+
+                    <p>Missing submissions increase risk.</p>
+                </div>
+
+                <div class="weight-item">
+                    <div class="weight-heading">
+                        <label for="lms-weight">
+                            LMS Engagement
+                        </label>
+                        <strong>@LmsWeight</strong>
+                    </div>
+
+                    <input id="lms-weight"
+                           type="range"
+                           min="0"
+                           max="100"
+                           step="5"
+                           @bind="LmsWeight"
+                           @bind:event="oninput" />
+
+                    <p>Lower LMS activity increases risk.</p>
+                </div>
+
+            </div>
+
+            <div class="weight-summary">
+                <span>Total Weight</span>
+                <strong>@TotalWeight</strong>
+            </div>
+
+            <p class="weight-note">
+                Weights are normalized automatically.
+                This page's slider changes are temporary and
+                do not modify the saved administrator configuration.
+            </p>
+
+            <button type="button"
+                    class="reset-button"
+                    @onclick="ResetWeights">
+                Reset to Default Weights
+            </button>
+
+            @if (!HasValidWeights)
+            {
+                <div class="config-warning" role="alert">
+                    At least one weight must be greater than zero.
+                    Set a positive weight to enable scoring.
+                </div>
+            }
+
+        </section>
+
+        <!-- Individual Risk Explanation -->
+        <section class="risk-panel">
+
+            <div class="panel-title">
+                <h2>Individual Risk Explanation</h2>
+                <p>
+                    Review the score and ranked risk factors for a student.
+                </p>
+            </div>
+
+            <div class="student-select-wrapper">
+                <label for="risk-student">
+                    SELECT STUDENT
+                </label>
+
+                <select id="risk-student"
+                        @bind="SelectedStudentId">
+
+                    @foreach (var studentOption in StudentRecords)
+                    {
+                        <option value="@studentOption.Id">
+                            @studentOption.Name
+                            (@studentOption.Id)
+                        </option>
+                    }
+
+                </select>
+            </div>
+
+            @if (SelectedStudent is { } selectedRecord)
+            {
+                @if (HasValidWeights)
+                {
+                    var result = CalculateRisk(selectedRecord);
+
+                    <div class="score-summary">
+
+                        <div class="score-circle @GetCssClass(result.Band)">
+                            <strong>
+                                @FormatScore(result.Score)
+                            </strong>
+                            <small>/ 100</small>
+                        </div>
+
+                        <div class="score-details">
+
+                            <span>Calculated Academic Risk</span>
+
+                            <strong class="risk-badge @GetCssClass(result.Band)">
+                                @result.Band Risk
+                            </strong>
+
+                            <p>
+                                Based on the student's centralized
+                                academic indicators.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <h3 class="breakdown-title">
+                        Ranked Indicator Contributions
+                    </h3>
+
+                    <div class="breakdown-list">
+
+                        @foreach (var contribution in result.Contributions)
+                        {
+                            <div class="breakdown-item">
+
+                                <div class="breakdown-heading">
+                                    <span>@contribution.Name</span>
+                                    <strong>
+                                        @contribution.Contribution.ToString("0.0")
+                                        points
+                                    </strong>
+                                </div>
+
+                                <div class="contribution-track">
+                                    <div class="contribution-fill"
+                                         style="@GetContributionStyle(contribution.Contribution)">
+                                    </div>
+                                </div>
+
+                                <small>
+                                    Indicator risk:
+                                    @contribution.IndicatorRisk.ToString("0.0")%
+                                    · Weight share:
+                                    @contribution.WeightShare.ToString("0.0")%
+                                </small>
+
+                            </div>
+                        }
+
+                    </div>
+
+                    <div class="explanation-box">
+
+                        <strong>How this score was calculated</strong>
+
+                        <p>
+                            Each academic indicator contributes a
+                            weighted portion to the total score.
+                            Lower performance produces a higher
+                            risk contribution. The contributions
+                            are added to obtain the final score.
+                        </p>
+
+                        <p>
+                            The calculation uses model
+                            @result.ModelVersion.
+                            These demonstration scores are not
+                            validated predictions of student outcomes.
+                        </p>
+
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-message">
+                        Set at least one weight above zero
+                        to calculate a risk score.
+                    </div>
+                }
+            }
+
+        </section>
+
+    </div>
+
+    <!-- Student Risk Comparison -->
+    <section class="risk-panel comparison-panel">
+
+        <div class="panel-title comparison-heading">
+
+            <div>
+                <h2>Student Risk Comparison</h2>
+                <p>
+                    Compare calculated scores across all students
+                    in the shared data service.
+                </p>
+            </div>
+
+            <div class="comparison-tools">
+
+                <input type="search"
+                       placeholder="Search student..."
+                       aria-label="Search students"
+                       @bind="SearchText"
+                       @bind:event="oninput" />
+
+                <select aria-label="Filter risk levels"
+                        @bind="SelectedRiskFilter">
+                    <option value="All">All Risk Levels</option>
+                    <option value="High">High Risk</option>
+                    <option value="Moderate">Moderate Risk</option>
+                    <option value="Low">Low Risk</option>
+                </select>
+
+            </div>
+
+        </div>
+
+        <div class="comparison-table-scroll">
+
+            <table class="comparison-table">
+
+                <thead>
+                    <tr>
+                        <th>STUDENT</th>
+                        <th>ATTENDANCE</th>
+                        <th>ASSESSMENT</th>
+                        <th>ASSIGNMENTS</th>
+                        <th>LMS</th>
+                        <th>RISK SCORE</th>
+                        <th>RISK BAND</th>
+                        <th>DETAILS</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var comparisonRecord in FilteredStudents)
+                    {
+                        <tr>
+
+                            <td>
+                                <strong>@comparisonRecord.Name</strong>
+                                <small>
+                                    @comparisonRecord.Id ·
+                                    @comparisonRecord.Department
+                                </small>
+                            </td>
+
+                            <td>@comparisonRecord.Attendance%</td>
+
+                            <td>@comparisonRecord.Assessment%</td>
+
+                            <td>
+                                @comparisonRecord.SubmittedAssignments/@comparisonRecord.TotalAssignments
+                            </td>
+
+                            <td>@comparisonRecord.LmsActivity%</td>
+
+                            <td>
+                                <strong>
+                                    @(HasValidWeights
+                                        ? FormatScore(
+                                            CalculateRisk(comparisonRecord).Score
+                                          )
+                                        : "—")
+                                </strong>
+                            </td>
+
+                            <td>
+                                @if (HasValidWeights)
+                                {
+                                    <span class="risk-badge @GetCssClass(CalculateRisk(comparisonRecord).Band)">
+                                        @CalculateRisk(comparisonRecord).Band
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span>Unavailable</span>
+                                }
+                            </td>
+
+                            <td>
+                                <button type="button"
+                                        class="view-button"
+                                        @onclick="() => SelectStudent(comparisonRecord.Id)">
+                                    Analyse
+                                </button>
+                            </td>
+
+                        </tr>
+                    }
+
+                    @if (!FilteredStudents.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="empty-message">
+                                No matching student records.
+                            </td>
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <div class="comparison-footer">
+            Showing @FilteredStudents.Count() of
+            @StudentRecords.Count records
+        </div>
+
+    </section>
+
+    <div class="risk-disclaimer">
+        <strong>Prototype Scoring Notice</strong>
+        <p>
+            The risk scores are derived from synthetic academic data.
+            Default indicator weights and classification thresholds
+            are illustrative and must be reviewed before real use.
+
+            This scoring engine supports transparent academic
+            monitoring and human mentoring decisions.
+            It is not a validated prediction model.
+        </p>
+    </div>
+
+</div>
+
+@code {
+
+    private int AttendanceWeight = 35;
+    private int AssessmentWeight = 30;
+    private int AssignmentWeight = 20;
+    private int LmsWeight = 15;
+
+    private string SelectedStudentId = "STU001";
+    private string SearchText = "";
+    private string SelectedRiskFilter = "All";
+
+    private IReadOnlyList<Student> StudentRecords =>
+        AcademicData.GetAllStudents();
+
+    private Student? SelectedStudent =>
+        AcademicData.GetStudentById(SelectedStudentId);
+
+    private RiskWeights CurrentWeights =>
+        new(
+            AttendanceWeight,
+            AssessmentWeight,
+            AssignmentWeight,
+            LmsWeight
+        );
+
+    private int TotalWeight =>
+        AttendanceWeight +
+        AssessmentWeight +
+        AssignmentWeight +
+        LmsWeight;
+
+    private bool HasValidWeights =>
+        RiskScoringService.AreWeightsValid(CurrentWeights);
+
+    private RiskScoreResult CalculateRisk(Student studentRecord)
+    {
+        return RiskScoringService.Calculate(
+            studentRecord,
+            CurrentWeights
+        );
+    }
+
+    private int HighRiskCount =>
+        CountRiskBand("High");
+
+    private int ModerateRiskCount =>
+        CountRiskBand("Moderate");
+
+    private int LowRiskCount =>
+        CountRiskBand("Low");
+
+    private int CountRiskBand(string band)
+    {
+        if (!HasValidWeights)
+        {
+            return 0;
+        }
+
+        return StudentRecords.Count(
+            record => CalculateRisk(record).Band == band
+        );
+    }
+
+    private IEnumerable<Student> FilteredStudents
+    {
+        get
+        {
+            var matching = StudentRecords.Where(record =>
+                string.IsNullOrWhiteSpace(SearchText) ||
+                record.Name.Contains(
+                    SearchText,
+                    StringComparison.OrdinalIgnoreCase
+                ) ||
+                record.Id.Contains(
+                    SearchText,
+                    StringComparison.OrdinalIgnoreCase
+                ) ||
+                record.Department.Contains(
+                    SearchText,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            );
+
+            if (!HasValidWeights)
+            {
+                return SelectedRiskFilter == "All"
+                    ? matching.OrderBy(x => x.Name)
+                    : Enumerable.Empty<Student>();
+            }
+
+            return matching
+                .Where(record =>
+                    SelectedRiskFilter == "All" ||
+                    CalculateRisk(record).Band == SelectedRiskFilter
+                )
+                .OrderByDescending(record =>
+                    CalculateRisk(record).Score
+                )
+                .ToList();
+        }
+    }
+
+    private void SelectStudent(string studentId)
+    {
+        SelectedStudentId = studentId;
+    }
+
+    private void ResetWeights()
+    {
+        AttendanceWeight = 35;
+        AssessmentWeight = 30;
+        AssignmentWeight = 20;
+        LmsWeight = 15;
+    }
+
+    private static string FormatScore(double score)
+    {
+        return score.ToString("0.0");
+    }
+
+    private static string GetCssClass(string value)
+    {
+        return value.ToLowerInvariant();
+    }
+
+    private static string GetContributionStyle(double value)
+    {
+        double safeValue = Math.Clamp(value, 0, 100);
+
+        return "width:" +
+            safeValue.ToString(
+                "0.##",
+                CultureInfo.InvariantCulture
+            ) + "%;";
+    }
+}

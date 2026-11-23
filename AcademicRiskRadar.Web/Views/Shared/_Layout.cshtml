@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Academic Risk Radar</title>
+    
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/app.css" />
+    <link rel="stylesheet" href="~/css/dashboard-pro.css" />
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark pro-navbar py-2">
+            <div class="container-fluid px-4">
+                <a class="navbar-brand d-flex align-items-center" asp-controller="Home" asp-action="Index">
+                    <div class="me-2 d-flex align-items-center justify-content-center bg-danger rounded-3 p-2" style="width: 36px; height: 36px;">
+                        <span class="text-white fw-bold" style="font-size: 0.95rem;">ARR</span>
+                    </div>
+                    <div>
+                        <span class="text-white fw-bold">Academic Risk Radar</span>
+                        <div class="text-white-50 small fw-normal" style="font-size: 0.72rem; line-height: 1;">Student Early Warning &amp; Intelligence Platform</div>
+                    </div>
+                </a>
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3 gap-1">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Students" asp-action="Index">Students Directory</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="RiskAnalysis" asp-action="Index">Risk Scoring Engine</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="SqlExplorer" asp-action="Index">Data Center &amp; Analytics</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/api/students" target="_blank">
+                                Developer API <span class="badge bg-primary ms-1" style="font-size: 0.65rem;">JSON</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-info" href="/">
+                                Live Portal &rarr;
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- User Identity & Role Quick-Switch -->
+                    <div class="d-flex align-items-center gap-2">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <div class="d-flex align-items-center bg-white bg-opacity-10 rounded-pill px-3 py-1 text-white small">
+                                <span class="me-2">👤 @User.Identity.Name</span>
+                                <span class="badge bg-primary text-uppercase" style="font-size: 0.7rem;">@User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value</span>
+                            </div>
+                            <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-outline-light btn-sm rounded-pill px-3">Sign Out</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <div class="dropdown">
+                                <button class="btn btn-outline-light btn-sm rounded-pill px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    Quick Role Demo
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-2">
+                                    <li><h6 class="dropdown-header small text-uppercase fw-bold">Select Demo Profile</h6></li>
+                                    <li><a class="dropdown-item py-2 text-danger" asp-controller="Account" asp-action="QuickLogin" asp-route-role="Admin">👑 Administrator (Dean Vance)</a></li>
+                                    <li><a class="dropdown-item py-2 text-primary" asp-controller="Account" asp-action="QuickLogin" asp-route-role="Faculty">👨‍🏫 Faculty Mentor (Dr. Kumar)</a></li>
+                                    <li><a class="dropdown-item py-2 text-success" asp-controller="Account" asp-action="QuickLogin" asp-route-role="Student">🎓 Student (Aarav Sharma)</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item py-2 text-primary fw-semibold" asp-controller="Account" asp-action="Register">➕ Register New Account</a></li>
+                                </ul>
+                            </div>
+                            <a asp-controller="Account" asp-action="Register" class="btn btn-outline-light btn-sm rounded-pill px-3">Register</a>
+                            <a asp-controller="Account" asp-action="Login" class="btn btn-primary btn-sm rounded-pill px-3 fw-bold">Sign In</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Container -->
+    <main role="main" class="container-fluid px-4 py-4">
+        <!-- Flash Notification Banner -->
+        @if (TempData["AlertMessage"] != null)
+        {
+            var alertType = TempData["AlertType"]?.ToString() ?? "info";
+            <div class="alert alert-@alertType alert-dismissible fade show pro-card mb-4 border-0 shadow-sm" role="alert">
+                <strong>Notice:</strong> @TempData["AlertMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer-bar text-center py-4 bg-white border-top mt-auto">
+        <div class="container">
+            <div class="d-flex flex-wrap justify-content-between align-items-center text-muted small">
+                <div>
+                    <strong>Academic Risk Radar</strong> &copy; 2026–27 &bull; Institutional Early Warning &amp; Mentoring Platform
+                </div>
+                <div>
+                    All Systems Operational &bull; Continuous Student Risk Surveillance Active
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

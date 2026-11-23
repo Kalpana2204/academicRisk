@@ -1,0 +1,155 @@
+@{
+    ViewData["Title"] = "Relational Database & SQL Schema";
+}
+
+<div class="mb-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Platform Architecture</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Relational Database</li>
+        </ol>
+    </nav>
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="fw-bold mb-1">Relational Database &amp; SQL Schema</h2>
+            <p class="text-muted mb-0">Databases, tables, integrity constraints, clauses, operators, joins, views, and stored procedures.</p>
+        </div>
+        <a asp-controller="SqlExplorer" asp-action="Index" class="btn btn-danger fw-bold">
+            🚀 Launch Live SQL Server Studio &rarr;
+        </a>
+    </div>
+</div>
+
+<!-- Section 1: Intro to Databases & SQL Server -->
+<div class="card card-shadow p-4 mb-4">
+    <h4 class="fw-bold text-primary mb-3">1. Introduction to Databases & SQL Server</h4>
+    <p>
+        A <strong>database</strong> is an organized collection of structured data. <strong>Microsoft SQL Server</strong> 
+        is an enterprise Relational Database Management System (RDBMS) utilizing Transact-SQL (T-SQL).
+    </p>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold">Relational Databases (RDBMS)</h6>
+                <p class="small text-muted mb-0">Tables composed of rows and columns with strict schema and foreign key relationships (SQL Server, Oracle, PostgreSQL).</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold">NoSQL Databases</h6>
+                <p class="small text-muted mb-0">Non-relational, flexible schema models including Document (MongoDB), Key-Value (Redis), Columnar (Cassandra), and Graph (Neo4j).</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold">In-Memory Databases</h6>
+                <p class="small text-muted mb-0">Data stored entirely in main memory (RAM) for ultra-low latency real-time caching and analytics.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 2: SQL Command Categories -->
+<div class="card card-shadow p-4 mb-4">
+    <h4 class="fw-bold text-primary mb-3">2. SQL Command Classification</h4>
+    <div class="table-responsive">
+        <table class="table table-bordered table-sm align-middle">
+            <thead class="table-light"><tr><th>Category</th><th>Full Name</th><th>Core Commands</th><th>Role &amp; Responsibility</th></tr></thead>
+            <tbody>
+                <tr><td><strong>DDL</strong></td><td>Data Definition Language</td><td><code>CREATE</code>, <code>ALTER</code>, <code>DROP</code>, <code>TRUNCATE</code></td><td>Defines and modifies database schema and table structures.</td></tr>
+                <tr><td><strong>DML</strong></td><td>Data Manipulation Language</td><td><code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code></td><td>Modifies data records contained inside database tables.</td></tr>
+                <tr><td><strong>DQL</strong></td><td>Data Query Language</td><td><code>SELECT</code></td><td>Retrieves and projects data matching query predicates.</td></tr>
+                <tr><td><strong>DCL</strong></td><td>Data Control Language</td><td><code>GRANT</code>, <code>REVOKE</code></td><td>Controls user access permissions and security privileges.</td></tr>
+                <tr><td><strong>TCL</strong></td><td>Transaction Control Language</td><td><code>COMMIT</code>, <code>ROLLBACK</code>, <code>SAVEPOINT</code></td><td>Manages atomic transactions ensuring ACID properties.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Section 3: Tables & Constraints -->
+<div class="card card-shadow p-4 mb-4">
+    <h4 class="fw-bold text-primary mb-3">3. SQL Server Tables & Integrity Constraints</h4>
+    <p>Constraints enforce business rules and maintain referential integrity in relational databases:</p>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-primary">PRIMARY KEY (PK)</h6>
+                <p class="small text-muted mb-0">Uniquely identifies each row in a table. Creates a clustered index automatically and cannot accept NULLs.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-success">FOREIGN KEY (FK)</h6>
+                <p class="small text-muted mb-0">Enforces referential integrity by linking child records to parent table primary keys (e.g. <code>Students.MentorId &rarr; Mentors.Id</code>).</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-danger">CHECK Constraint</h6>
+                <p class="small text-muted mb-0">Validates that values satisfy boolean conditions (e.g. <code>CHECK (AttendanceRate BETWEEN 0 AND 100)</code>).</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-warning text-dark">UNIQUE Constraint</h6>
+                <p class="small text-muted mb-0">Guarantees that all values in a column or set of columns are distinct (e.g. <code>UNIQUE (StudentCode)</code>).</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-info text-dark">NOT NULL Constraint</h6>
+                <p class="small text-muted mb-0">Prevents null or empty values from being inserted into required database fields.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-secondary">DEFAULT Constraint</h6>
+                <p class="small text-muted mb-0">Specifies an automated fallback value when no value is provided on insert (e.g. <code>DEFAULT GETUTCDATE()</code>).</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section 4: Joins, Views, Stored Procedures -->
+<div class="card card-shadow p-4">
+    <h4 class="fw-bold text-primary mb-3">4. Advanced SQL Server Concepts</h4>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold">SQL Joins (Relational Querying)</h6>
+                <ul class="small text-muted ps-3 mb-0">
+                    <li><strong>INNER JOIN:</strong> Matching rows in both tables</li>
+                    <li><strong>LEFT OUTER JOIN:</strong> All rows from left table + matched right</li>
+                    <li><strong>RIGHT OUTER JOIN:</strong> All rows from right table + matched left</li>
+                    <li><strong>FULL OUTER JOIN:</strong> All rows when matched on either side</li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold">SQL Server Views</h6>
+                <p class="small text-muted">
+                    Virtual tables based on the result-set of an underlying SQL statement.
+                </p>
+                <ul class="small text-muted ps-3 mb-0">
+                    <li><code>vw_HighRiskStudentsOverview</code></li>
+                    <li><code>vw_StudentAttendancePerformance</code></li>
+                    <li>Simplifies complex joins and enhances security</li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold">Stored Procedures</h6>
+                <p class="small text-muted">
+                    Pre-compiled collections of T-SQL statements stored on the database server.
+                </p>
+                <ul class="small text-muted ps-3 mb-0">
+                    <li>Pre-compiled execution plan reduces latency</li>
+                    <li>Supports input/output parameters & transactions</li>
+                    <li><code>sp_GetStudentsAtRisk</code></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

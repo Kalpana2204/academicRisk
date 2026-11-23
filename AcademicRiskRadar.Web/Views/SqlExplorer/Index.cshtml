@@ -1,0 +1,505 @@
+@{
+    ViewData["Title"] = "Data Center & Relational Analytics";
+    string activeTab = ViewBag.ActiveTab ?? "joins";
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Data Center &amp; Relational Analytics</h2>
+        <p class="text-muted mb-0">
+            Institutional database operations, analytical reporting views, and automated stored procedures.
+        </p>
+    </div>
+    <div class="mt-2 mt-md-0">
+        <a href="/Database/AcademicRiskRadar_Complete_Schema.sql" download class="btn btn-pro-primary btn-sm rounded-pill px-3">
+            ⬇️ Export Database Script (.sql)
+        </a>
+    </div>
+</div>
+
+<!-- Tabs Navigation -->
+<ul class="nav nav-pills mb-4 gap-2" id="sqlTabs" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link @(activeTab == "joins" ? "active" : "") fw-bold rounded-pill px-3" asp-action="Index" asp-route-tab="joins">
+            🔗 Relational Data Joins
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(activeTab == "views" ? "active" : "") fw-bold rounded-pill px-3" asp-action="Index" asp-route-tab="views">
+            👁️ Risk &amp; Compliance Views
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(activeTab == "procs" ? "active" : "") fw-bold rounded-pill px-3" asp-action="Index" asp-route-tab="procs">
+            ⚙️ Automated Procedures
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(activeTab == "tables" ? "active" : "") fw-bold rounded-pill px-3" asp-action="Index" asp-route-tab="tables">
+            📊 Database Schema
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(activeTab == "clauses" ? "active" : "") fw-bold rounded-pill px-3" asp-action="Index" asp-route-tab="clauses">
+            📝 Query Clauses &amp; Operators
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link @(activeTab == "script" ? "active" : "") fw-bold rounded-pill px-3" asp-action="Index" asp-route-tab="script">
+            📄 SQL Setup Script
+        </a>
+    </li>
+</ul>
+
+@if (activeTab == "joins")
+{
+    <!-- Tab 1: Relational Data Joins -->
+    <div class="row g-4">
+        <!-- Inner Join -->
+        <div class="col-lg-6">
+            <div class="pro-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="fw-bold text-primary mb-0">Enrolled Course Matches</h5>
+                    <span class="badge bg-primary bg-opacity-10 text-primary">Inner Join</span>
+                </div>
+                <div class="p-2 bg-light rounded small text-muted font-monospace mb-3">
+                    SELECT s.StudentCode, s.Name, c.CourseCode, c.AttendanceRate, c.Marks FROM Students s INNER JOIN StudentCourses c ON s.Id = c.StudentId
+                </div>
+                <div class="table-responsive small">
+                    <table class="table pro-table mb-0">
+                        <thead><tr><th>Code</th><th>Student</th><th>Course</th><th>Att%</th><th>Marks</th></tr></thead>
+                        <tbody>
+                            @foreach (var r in (IEnumerable<AcademicRiskRadar.Web.Services.StudentCourseJoinDto>)ViewBag.InnerJoinData)
+                            {
+                                <tr>
+                                    <td><span class="badge bg-light text-secondary border">@r.StudentCode</span></td>
+                                    <td class="fw-semibold">@r.StudentName</td>
+                                    <td><code>@r.CourseCode</code></td>
+                                    <td>@r.Attendance%</td>
+                                    <td>@r.Marks%</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Left Join -->
+        <div class="col-lg-6">
+            <div class="pro-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="fw-bold text-success mb-0">Mentoring Intervention Caseload</h5>
+                    <span class="badge bg-success bg-opacity-10 text-success">Left Outer Join</span>
+                </div>
+                <div class="p-2 bg-light rounded small text-muted font-monospace mb-3">
+                    SELECT s.StudentCode, s.Name, i.ActionType, i.Status FROM Students s LEFT JOIN Interventions i ON s.Id = i.StudentId
+                </div>
+                <div class="table-responsive small">
+                    <table class="table pro-table mb-0">
+                        <thead><tr><th>Student</th><th>Action Type</th><th>Status</th><th>Mentor</th></tr></thead>
+                        <tbody>
+                            @foreach (var r in (IEnumerable<AcademicRiskRadar.Web.Services.StudentInterventionJoinDto>)ViewBag.LeftJoinData)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@r.StudentName</td>
+                                    <td>@(r.ActionType ?? "<No Action Needed>")</td>
+                                    <td>
+                                        @if (r.Status != null) { <span class="badge bg-warning text-dark">@r.Status</span> }
+                                        else { <span class="text-muted small">None</span> }
+                                    </td>
+                                    <td>@(r.MentorName ?? "Unassigned")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Join -->
+        <div class="col-lg-6">
+            <div class="pro-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="fw-bold text-warning text-dark mb-0">Faculty Advisor Directory</h5>
+                    <span class="badge bg-warning bg-opacity-20 text-dark">Right Outer Join</span>
+                </div>
+                <div class="p-2 bg-light rounded small text-muted font-monospace mb-3">
+                    SELECT m.Name, m.Department, s.StudentCode, s.Name FROM Students s RIGHT JOIN Mentors m ON s.MentorId = m.Id
+                </div>
+                <div class="table-responsive small">
+                    <table class="table pro-table mb-0">
+                        <thead><tr><th>Mentor Name</th><th>Dept</th><th>Assigned Student Code</th><th>Assigned Student</th></tr></thead>
+                        <tbody>
+                            @foreach (var r in (IEnumerable<AcademicRiskRadar.Web.Services.MentorStudentJoinDto>)ViewBag.RightJoinData)
+                            {
+                                <tr>
+                                    <td><strong>@r.MentorName</strong></td>
+                                    <td><span class="badge bg-light text-secondary border">@r.Department</span></td>
+                                    <td>@(r.AssignedStudentCode ?? "<None Assigned>")</td>
+                                    <td>@(r.AssignedStudentName ?? "<None>")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Join -->
+        <div class="col-lg-6">
+            <div class="pro-card p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="fw-bold text-secondary mb-0">Comprehensive Cohort Cross-Match</h5>
+                    <span class="badge bg-secondary bg-opacity-10 text-secondary">Full Outer Join</span>
+                </div>
+                <div class="p-2 bg-light rounded small text-muted font-monospace mb-3">
+                    SELECT s.Name, s.Department, i.ActionType, i.Status FROM Students s FULL OUTER JOIN Interventions i ON s.Id = i.StudentId
+                </div>
+                <div class="table-responsive small">
+                    <table class="table pro-table mb-0">
+                        <thead><tr><th>Student</th><th>Dept</th><th>Intervention</th><th>Status</th></tr></thead>
+                        <tbody>
+                            @foreach (var r in (IEnumerable<AcademicRiskRadar.Web.Services.FullJoinDto>)ViewBag.FullJoinData)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@(r.StudentName ?? "<Null Student>")</td>
+                                    <td>@(r.Department ?? "N/A")</td>
+                                    <td>@(r.ActionType ?? "<No Action>")</td>
+                                    <td>@(r.Status ?? "<None>")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else if (activeTab == "views")
+{
+    <!-- Tab 2: Views -->
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="pro-card p-4">
+                <h5 class="fw-bold text-primary mb-1">High-Risk Cohort Overview View</h5>
+                <p class="text-muted small mb-3">Pre-aggregated view filtering students with critical or high risk flags</p>
+                <div class="table-responsive small">
+                    <table class="table pro-table mb-0">
+                        <thead><tr><th>Code</th><th>Name</th><th>Dept</th><th>Risk Score</th><th>Level</th></tr></thead>
+                        <tbody>
+                            @foreach (var v in (IEnumerable<AcademicRiskRadar.Web.Services.HighRiskStudentViewDto>)ViewBag.HighRiskView)
+                            {
+                                <tr>
+                                    <td><span class="badge bg-light text-secondary border">@v.StudentCode</span></td>
+                                    <td class="fw-semibold">@v.Name</td>
+                                    <td>@v.Department</td>
+                                    <td><strong class="text-danger">@v.RiskScore%</strong></td>
+                                    <td><span class="risk-pill critical">@v.RiskLevel</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="pro-card p-4">
+                <h5 class="fw-bold text-success mb-1">Attendance Compliance Status View</h5>
+                <p class="text-muted small mb-3">Institutional attendance standards compliance view</p>
+                <div class="table-responsive small">
+                    <table class="table pro-table mb-0">
+                        <thead><tr><th>Code</th><th>Name</th><th>Attendance</th><th>Compliance Grade</th></tr></thead>
+                        <tbody>
+                            @foreach (var v in (IEnumerable<AcademicRiskRadar.Web.Services.AttendancePerformanceViewDto>)ViewBag.AttendanceView)
+                            {
+                                <tr>
+                                    <td><span class="badge bg-light text-secondary border">@v.StudentCode</span></td>
+                                    <td class="fw-semibold">@v.Name</td>
+                                    <td><strong>@v.AttendanceRate%</strong></td>
+                                    <td><span class="badge bg-light text-dark border">@v.StatusGrade</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else if (activeTab == "procs")
+{
+    <!-- Tab 3: Stored Procedures -->
+    <div class="row g-4">
+        <!-- sp_GetStudentsAtRisk Runner -->
+        <div class="col-lg-6">
+            <div class="pro-card p-4">
+                <h5 class="fw-bold text-primary mb-1">Procedure: Query At-Risk Students</h5>
+                <p class="text-muted small mb-3">Executes parameterized database procedure filtering cohort by risk and attendance.</p>
+
+                <form asp-action="RunStoredProcedure" method="post" class="mb-3 bg-light p-3 rounded-3">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Min Risk Level</label>
+                            <select name="minRisk" class="form-select form-select-sm rounded-3">
+                                <option value="Low">Low (All)</option>
+                                <option value="Moderate">Moderate</option>
+                                <option value="High" selected>High</option>
+                                <option value="Critical">Critical Only</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Max Attendance%</label>
+                            <input type="number" name="maxAttendance" value="65.0" step="1" class="form-control form-select-sm rounded-3" />
+                        </div>
+                        <div class="col-12 mt-2">
+                            <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold rounded-3">
+                                ⚡ Run Risk Procedure
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                @if (TempData["SpMessage"] != null)
+                {
+                    <div class="alert alert-success small mb-2">@TempData["SpMessage"]</div>
+                }
+
+                <div class="table-responsive small">
+                    <table class="table pro-table mb-0">
+                        <thead><tr><th>Code</th><th>Name</th><th>Attendance</th><th>Risk</th></tr></thead>
+                        <tbody>
+                            @foreach (var s in (IEnumerable<AcademicRiskRadar.Web.Models.StudentEntity>)ViewBag.SpRiskData)
+                            {
+                                <tr>
+                                    <td>@s.StudentCode</td>
+                                    <td class="fw-semibold">@s.Name</td>
+                                    <td>@s.AttendanceRate%</td>
+                                    <td><span class="risk-pill critical">@s.Risk (@s.ComputedRiskScore%)</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- sp_EnrollStudentAndRecalculateRisk Runner -->
+        <div class="col-lg-6">
+            <div class="pro-card p-4">
+                <h5 class="fw-bold text-success mb-1">Procedure: Enroll Course &amp; Recalculate</h5>
+                <p class="text-muted small mb-3">Executes transactional procedure to enroll student in new course and automatically re-score risk.</p>
+
+                <form asp-action="RunEnrollmentProcedure" method="post" class="mb-3 bg-light p-3 rounded-3">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Student Code / ID</label>
+                            <input type="text" name="studentId" value="STU-001" class="form-control form-select-sm rounded-3" />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-bold">Course Code</label>
+                            <input type="text" name="courseCode" value="CS504" class="form-control form-select-sm rounded-3" />
+                        </div>
+                        <div class="col-8">
+                            <label class="form-label small fw-bold">Course Title</label>
+                            <input type="text" name="courseName" value="Artificial Intelligence" class="form-control form-select-sm rounded-3" />
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label small fw-bold">Credits</label>
+                            <input type="number" name="credits" value="4" min="1" max="6" class="form-control form-select-sm rounded-3" />
+                        </div>
+                        <div class="col-12 mt-2">
+                            <button type="submit" class="btn btn-success btn-sm w-100 fw-bold rounded-3">
+                                ⚡ Execute Enrollment Procedure
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                @if (TempData["EnrollMessage"] != null)
+                {
+                    bool isSuccess = (bool)(TempData["EnrollSuccess"] ?? false);
+                    <div class="alert @(isSuccess ? "alert-success" : "alert-warning") small">
+                        <strong>Transaction Result:</strong> @TempData["EnrollMessage"]
+                    </div>
+                }
+
+                <div class="p-3 bg-light rounded-3 small text-muted">
+                    Transaction executes atomically with error rollback protection and returns new calculated risk score.
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else if (activeTab == "tables")
+{
+    <!-- Tab 4: Tables & Constraints -->
+    <div class="pro-card p-4">
+        <h4 class="fw-bold mb-3">Institutional Database Schema</h4>
+        <div class="table-responsive">
+            <table class="table table-bordered pro-table align-middle">
+                <thead>
+                    <tr>
+                        <th>Table Name</th>
+                        <th>Primary Key</th>
+                        <th>Foreign Keys</th>
+                        <th>Unique Constraints</th>
+                        <th>Validation Rules</th>
+                        <th>Defaults</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>dbo.Students</strong></td>
+                        <td><code>StudentId</code></td>
+                        <td><code>MentorId &rarr; FacultyMentors</code></td>
+                        <td><code>StudentCode</code>, <code>Email</code></td>
+                        <td><code>AttendanceRate BETWEEN 0 AND 100</code></td>
+                        <td><code>AttendanceRate = 85.00</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>dbo.FacultyMentors</strong></td>
+                        <td><code>MentorId</code></td>
+                        <td>None</td>
+                        <td><code>Email</code></td>
+                        <td>None</td>
+                        <td><code>Designation = 'Assistant Professor'</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>dbo.Courses</strong></td>
+                        <td><code>CourseCode</code></td>
+                        <td>None</td>
+                        <td>None</td>
+                        <td><code>Credits BETWEEN 1 AND 6</code></td>
+                        <td><code>Credits = 3</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>dbo.StudentEnrollments</strong></td>
+                        <td><code>(StudentId, CourseCode)</code></td>
+                        <td><code>StudentId</code>, <code>CourseCode</code></td>
+                        <td>None</td>
+                        <td><code>AttendanceRate BETWEEN 0 AND 100</code></td>
+                        <td><code>GETUTCDATE()</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>dbo.MentoringInterventions</strong></td>
+                        <td><code>InterventionId</code></td>
+                        <td><code>StudentId &rarr; Students</code></td>
+                        <td>None</td>
+                        <td><code>Status IN ('Scheduled','In Progress','Completed')</code></td>
+                        <td><code>Status = 'Scheduled'</code></td>
+                    </tr>
+                    <tr>
+                        <td><strong>dbo.SystemAuditLogs</strong></td>
+                        <td><code>LogId</code></td>
+                        <td>None</td>
+                        <td>None</td>
+                        <td>None</td>
+                        <td><code>GETUTCDATE()</code></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+else if (activeTab == "clauses")
+{
+    <!-- Tab 5: Clauses & Operators -->
+    <div class="pro-card p-4">
+        <h4 class="fw-bold mb-3">Database Query Syntax Reference</h4>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <h5 class="fw-bold text-primary">Query Clauses</h5>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <strong>WHERE:</strong> Filters records by condition (e.g. <code>WHERE AttendanceRate &lt; 75</code>)
+                    </li>
+                    <li class="list-group-item">
+                        <strong>GROUP BY:</strong> Groups rows by category (e.g. <code>GROUP BY Department</code>)
+                    </li>
+                    <li class="list-group-item">
+                        <strong>HAVING:</strong> Filters aggregated groups (e.g. <code>HAVING COUNT(*) &gt;= 1</code>)
+                    </li>
+                    <li class="list-group-item">
+                        <strong>ORDER BY:</strong> Sorts results (e.g. <code>ORDER BY ComputedRiskScore DESC</code>)
+                    </li>
+                    <li class="list-group-item">
+                        <strong>DISTINCT &amp; TOP:</strong> Deduplicates and restricts row counts
+                    </li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h5 class="fw-bold text-success">Logical &amp; Comparison Operators</h5>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <strong>Comparison:</strong> <code>=</code>, <code>&lt;&gt;</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Logical:</strong> <code>AND</code>, <code>OR</code>, <code>NOT</code>
+                    </li>
+                    <li class="list-group-item">
+                        <strong>IN / NOT IN:</strong> Matches against a set of values (e.g. <code>Department IN ('CSE', 'ECE')</code>)
+                    </li>
+                    <li class="list-group-item">
+                        <strong>BETWEEN ... AND:</strong> Inclusive range filtering (e.g. <code>ComputedRiskScore BETWEEN 30 AND 80</code>)
+                    </li>
+                    <li class="list-group-item">
+                        <strong>LIKE:</strong> Pattern matching with wildcards (e.g. <code>FullName LIKE '%Sharma%'</code>)
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <!-- Tab 6: Full SQL Script -->
+    <div class="pro-card p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h4 class="fw-bold mb-0">Complete SQL Server Schema Script</h4>
+                <p class="text-muted small">File: <code>Database/AcademicRiskRadar_Complete_Schema.sql</code></p>
+            </div>
+            <a href="/Database/AcademicRiskRadar_Complete_Schema.sql" download class="btn btn-pro-primary btn-sm rounded-pill px-3">
+                ⬇️ Download .SQL Script
+            </a>
+        </div>
+        <div class="bg-dark text-light p-3 rounded-3" style="max-height: 500px; overflow-y: auto; font-family: monospace; font-size: 0.85rem;">
+            <pre class="text-light mb-0"><code>-- Complete Institutional Database Script
+CREATE DATABASE AcademicRiskRadarDB;
+GO
+USE AcademicRiskRadarDB;
+GO
+
+-- Table 1: Faculty Mentors
+CREATE TABLE dbo.FacultyMentors (
+    MentorId NVARCHAR(20) NOT NULL PRIMARY KEY CLUSTERED,
+    FullName NVARCHAR(100) NOT NULL,
+    Email NVARCHAR(120) NOT NULL UNIQUE,
+    Department NVARCHAR(50) NOT NULL,
+    Designation NVARCHAR(80) NOT NULL DEFAULT 'Assistant Professor',
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE()
+);
+
+-- Table 2: Students with Constraints
+CREATE TABLE dbo.Students (
+    StudentId NVARCHAR(20) NOT NULL PRIMARY KEY CLUSTERED,
+    StudentCode NVARCHAR(25) NOT NULL UNIQUE,
+    FullName NVARCHAR(100) NOT NULL,
+    Email NVARCHAR(120) NOT NULL UNIQUE,
+    Department NVARCHAR(50) NOT NULL,
+    Program NVARCHAR(100) NOT NULL,
+    Semester INT NOT NULL CHECK (Semester BETWEEN 1 AND 8),
+    MentorId NVARCHAR(20) FOREIGN KEY REFERENCES dbo.FacultyMentors(MentorId),
+    AttendanceRate DECIMAL(5,2) NOT NULL CHECK (AttendanceRate BETWEEN 0 AND 100),
+    AssessmentScore DECIMAL(5,2) NOT NULL CHECK (AssessmentScore BETWEEN 0 AND 100),
+    RiskLevel NVARCHAR(20) NOT NULL CHECK (RiskLevel IN ('Low','Moderate','High','Critical'))
+);
+
+-- Full Views, Indexes and Stored Procedures included in script!</code></pre>
+        </div>
+    </div>
+}

@@ -1,0 +1,416 @@
+
+@page "/alerts"
+@rendermode InteractiveServer
+@using System.Linq
+@using AcademicRiskRadar.Web.Services
+@inject AcademicWorkflowService Workflow
+
+<PageTitle>Alerts & Inbox | Academic Risk Radar</PageTitle>
+
+<div class="alerts-page">
+
+    <div class="alerts-heading">
+        <div>
+            <h1>Alerts & Inbox</h1>
+            <p>
+                Review academic concerns, track notifications
+                and acknowledge alerts requiring faculty attention.
+            </p>
+        </div>
+
+        <span class="shared-label">Shared Workflow Data</span>
+    </div>
+
+    <div class="demo-notice">
+        Academic alerts are demonstration records. Acknowledgements
+        are stored temporarily in the current Blazor session.
+        No external notifications are sent.
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="alert-stats">
+
+        <div class="alert-stat-card">
+            <span>Total Alerts</span>
+            <strong>@Workflow.GetTotalAlertCount()</strong>
+            <small>All recorded alerts</small>
+        </div>
+
+        <div class="alert-stat-card">
+            <span>Pending Alerts</span>
+            <strong class="amber">
+                @Workflow.GetPendingAlertCount()
+            </strong>
+            <small>Awaiting acknowledgement</small>
+        </div>
+
+        <div class="alert-stat-card">
+            <span>High Priority Pending</span>
+            <strong class="red">
+                @Workflow.GetPendingHighPriorityAlertCount()
+            </strong>
+            <small>Priority mentor attention</small>
+        </div>
+
+        <div class="alert-stat-card">
+            <span>Acknowledged</span>
+            <strong class="green">
+                @Workflow.GetAcknowledgedAlertCount()
+            </strong>
+            <small>Reviewed demonstration alerts</small>
+        </div>
+
+    </div>
+
+    <div class="alerts-workspace">
+
+        <!-- Alert Inbox -->
+        <section class="alert-panel inbox-panel">
+
+            <div class="panel-heading">
+                <div>
+                    <h2>Academic Alert Inbox</h2>
+                    <p>Search, filter and select an alert to review.</p>
+                </div>
+            </div>
+
+            <div class="alert-filters">
+
+                <input type="search"
+                       placeholder="Search student or alert..."
+                       aria-label="Search academic alerts"
+                       @bind="SearchText"
+                       @bind:event="oninput" />
+
+                <select aria-label="Filter acknowledgement status"
+                        @bind="StatusFilter">
+                    <option value="All">All Statuses</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Acknowledged">Acknowledged</option>
+                </select>
+
+                <select aria-label="Filter alert priority"
+                        @bind="PriorityFilter">
+                    <option value="All">All Priorities</option>
+                    <option value="High">High</option>
+                    <option value="Moderate">Moderate</option>
+                    <option value="Low">Low</option>
+                </select>
+
+            </div>
+
+            <div class="inbox-list">
+
+                @foreach (var alertRecord in FilteredAlerts)
+                {
+                    <button type="button"
+                            @key="alertRecord.Id"
+                            class="inbox-item @(SelectedAlertId == alertRecord.Id ? "selected" : "")"
+                            @onclick="() => SelectAlert(alertRecord.Id)">
+
+                        <span class="inbox-icon @GetPriorityClass(alertRecord.Priority)">
+                            !
+                        </span>
+
+                        <span class="inbox-content">
+
+                            <span class="inbox-topline">
+                                <strong>@alertRecord.StudentName</strong>
+                                <small>
+                                    @alertRecord.CreatedAt.ToString("dd MMM")
+                                </small>
+                            </span>
+
+                            <span class="inbox-title">
+                                @alertRecord.Title
+                            </span>
+
+                            <span class="inbox-description">
+                                @alertRecord.Message
+                            </span>
+
+                            <span class="inbox-tags">
+
+                                <span class="priority-tag @GetPriorityClass(alertRecord.Priority)">
+                                    @alertRecord.Priority
+                                </span>
+
+                                <span class="status-tag @(alertRecord.Acknowledged ? "acknowledged" : "pending")">
+                                    @(alertRecord.Acknowledged
+                                        ? "Acknowledged"
+                                        : "Pending")
+                                </span>
+
+                            </span>
+
+                        </span>
+
+                    </button>
+                }
+
+                @if (!FilteredAlerts.Any())
+                {
+                    <div class="empty-message">
+                        No alerts match the selected filters.
+                    </div>
+                }
+
+            </div>
+
+            <div class="inbox-footer">
+                Showing @FilteredAlerts.Count() of
+                @Workflow.GetTotalAlertCount() alerts
+            </div>
+
+        </section>
+
+        <!-- Selected Alert Details -->
+        <section class="alert-panel detail-panel">
+
+            @if (SelectedAlert is { } selectedRecord)
+            {
+                <div class="panel-heading">
+                    <div>
+                        <span class="detail-eyebrow">
+                            ALERT-@selectedRecord.Id.ToString("D3")
+                        </span>
+
+                        <h2>Alert Details</h2>
+
+                        <p>
+                            Review the alert before updating
+                            its acknowledgement status.
+                        </p>
+                    </div>
+
+                    <span class="priority-tag @GetPriorityClass(selectedRecord.Priority)">
+                        @selectedRecord.Priority Priority
+                    </span>
+                </div>
+
+                <div class="alert-detail-title">
+                    <h3>@selectedRecord.Title</h3>
+
+                    <span class="status-tag @(selectedRecord.Acknowledged ? "acknowledged" : "pending")">
+                        @(selectedRecord.Acknowledged
+                            ? "Acknowledged"
+                            : "Pending")
+                    </span>
+                </div>
+
+                <div class="alert-information-grid">
+
+                    <div class="info-field">
+                        <span>Student</span>
+                        <strong>@selectedRecord.StudentName</strong>
+                    </div>
+
+                    <div class="info-field">
+                        <span>Student ID</span>
+                        <strong>@selectedRecord.StudentId</strong>
+                    </div>
+
+                    <div class="info-field">
+                        <span>Alert Category</span>
+                        <strong>@selectedRecord.Category</strong>
+                    </div>
+
+                    <div class="info-field">
+                        <span>Created At</span>
+                        <strong>
+                            @selectedRecord.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")
+                        </strong>
+                    </div>
+
+                </div>
+
+                <div class="alert-message-box">
+                    <h3>Academic Concern</h3>
+
+                    <p>@selectedRecord.Message</p>
+                </div>
+
+                <div class="alert-actions">
+
+                    @if (selectedRecord.Acknowledged)
+                    {
+                        <button type="button"
+                                class="secondary-button"
+                                @onclick="ReopenSelectedAlert">
+                            Reopen Alert
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button"
+                                class="primary-button"
+                                @onclick="AcknowledgeSelectedAlert">
+                            Acknowledge Alert
+                        </button>
+                    }
+
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(ActionMessage))
+                {
+                    <div class="action-feedback" role="status">
+                        @ActionMessage
+                    </div>
+                }
+
+                <div class="alert-history">
+
+                    <h3>Acknowledgement History</h3>
+
+                    @if (selectedRecord.Acknowledged)
+                    {
+                        <div class="history-item">
+                            <span class="history-dot"></span>
+
+                            <div>
+                                <strong>Alert acknowledged</strong>
+
+                                <p>
+                                    @selectedRecord.AcknowledgedAt?.ToString(
+                                        "dd MMM yyyy, hh:mm tt"
+                                    )
+                                </p>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="history-item">
+                            <span class="history-dot pending"></span>
+
+                            <div>
+                                <strong>Awaiting acknowledgement</strong>
+
+                                <p>
+                                    Created on
+                                    @selectedRecord.CreatedAt.ToString(
+                                        "dd MMM yyyy, hh:mm tt"
+                                    )
+                                </p>
+                            </div>
+                        </div>
+                    }
+
+                </div>
+
+                <div class="detail-notice">
+                    Acknowledging an alert confirms that it has
+                    been reviewed. It does not mean the underlying
+                    academic concern has been resolved.
+                    A mentoring intervention may still be necessary.
+                </div>
+            }
+            else
+            {
+                <div class="empty-message">
+                    Select an alert from the inbox to view details.
+                </div>
+            }
+
+        </section>
+
+    </div>
+
+</div>
+
+@code {
+
+    private string SearchText = "";
+    private string StatusFilter = "All";
+    private string PriorityFilter = "All";
+
+    private int SelectedAlertId = 1;
+    private string ActionMessage = "";
+
+    private AcademicAlert? SelectedAlert =>
+        Workflow.GetAlertById(SelectedAlertId);
+
+    private IEnumerable<AcademicAlert> FilteredAlerts =>
+        Workflow.GetAllAlerts()
+            .Where(record =>
+                string.IsNullOrWhiteSpace(SearchText) ||
+                record.StudentName.Contains(
+                    SearchText,
+                    StringComparison.OrdinalIgnoreCase
+                ) ||
+                record.StudentId.Contains(
+                    SearchText,
+                    StringComparison.OrdinalIgnoreCase
+                ) ||
+                record.Title.Contains(
+                    SearchText,
+                    StringComparison.OrdinalIgnoreCase
+                ) ||
+                record.Message.Contains(
+                    SearchText,
+                    StringComparison.OrdinalIgnoreCase
+                ) ||
+                record.Category.Contains(
+                    SearchText,
+                    StringComparison.OrdinalIgnoreCase
+                )
+            )
+            .Where(record =>
+                StatusFilter == "All" ||
+                (
+                    StatusFilter == "Pending" &&
+                    !record.Acknowledged
+                ) ||
+                (
+                    StatusFilter == "Acknowledged" &&
+                    record.Acknowledged
+                )
+            )
+            .Where(record =>
+                PriorityFilter == "All" ||
+                record.Priority == PriorityFilter
+            );
+
+    private void SelectAlert(int alertId)
+    {
+        SelectedAlertId = alertId;
+        ActionMessage = "";
+    }
+
+    private void AcknowledgeSelectedAlert()
+    {
+        if (Workflow.SetAlertAcknowledged(
+                SelectedAlertId,
+                true))
+        {
+            ActionMessage =
+                "Alert acknowledged successfully.";
+        }
+        else
+        {
+            ActionMessage =
+                "The selected alert could not be found.";
+        }
+    }
+
+    private void ReopenSelectedAlert()
+    {
+        if (Workflow.SetAlertAcknowledged(
+                SelectedAlertId,
+                false))
+        {
+            ActionMessage =
+                "Alert reopened successfully.";
+        }
+        else
+        {
+            ActionMessage =
+                "The selected alert could not be found.";
+        }
+    }
+
+    private static string GetPriorityClass(string value)
+    {
+        return value.ToLowerInvariant();
+    }
+}

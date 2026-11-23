@@ -1,0 +1,26 @@
+@{
+    ViewData["Title"] = "Access Denied - 403 Forbidden";
+}
+
+<div class="row justify-content-center py-5">
+    <div class="col-md-6 text-center">
+        <div class="card card-shadow p-5 border-danger border-top border-4">
+            <div class="display-3 text-danger mb-2">🚫</div>
+            <h2 class="fw-bold text-danger">Access Denied (403 Forbidden)</h2>
+            <p class="text-muted mt-2">
+                Your authenticated account (Role: <strong>@(User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "Guest")</strong>)
+                does not possess the required authorization policy or role to access this protected controller action.
+            </p>
+
+            <div class="p-3 bg-light rounded text-start small my-3">
+                <strong>Role-Based Security Policy Enforcement:</strong><br />
+                This endpoint is guarded by <code>[Authorize(Roles = "Admin")]</code> or <code>[Authorize(Roles = "Admin,Faculty")]</code>.
+            </div>
+
+            <div class="d-flex justify-content-center gap-2 mt-3">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">Go to Home</a>
+                <a asp-action="QuickLogin" asp-route-role="Admin" class="btn btn-danger fw-bold">Sign In as Admin &rarr;</a>
+            </div>
+        </div>
+    </div>
+</div>
