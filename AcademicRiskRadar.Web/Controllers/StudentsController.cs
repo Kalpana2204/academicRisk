@@ -35,6 +35,65 @@ public class StudentsController : Controller
         [FromQuery] string? search,
         [FromQuery] string? sortBy)
     {
+        // Role-based privacy: If authenticated as Student, restrict visibility to their own record
+        if (User.Identity?.IsAuthenticated == true && User.IsInRole("Student"))
+        {
+            string? userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+            string? studentId = User.FindFirst("StudentId")?.Value;
+            string? userName = User.Identity.Name;
+
+            StudentEntity? self = null;
+            if (!string.IsNullOrEmpty(studentId))
+            {
+                self = _repository.GetStudentById(studentId);
+            }
+            if (self == null && !string.IsNullOrEmpty(userEmail))
+            {
+                self = _repository.GetAllStudents().FirstOrDefault(s => s.Email.Equals(userEmail, StringComparison.OrdinalIgnoreCase));
+            }
+            if (self == null && !string.IsNullOrEmpty(userName))
+            {
+                self = _repository.GetAllStudents().FirstOrDefault(s => s.Name.Equals(userName, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (self == null)
+            {
+                self = new StudentEntity
+                {
+                    Id = $"STU-{Math.Abs((userEmail ?? "SELF").GetHashCode()):X}",
+                    StudentCode = "CSE-2026-101",
+                    Name = userName ?? "Student",
+                    Email = userEmail ?? "student@academicradar.edu",
+                    Department = "CSE",
+                    Program = "B.Tech Computer Science",
+                    Semester = 1,
+                    Section = "A",
+                    AttendanceRate = 88.5,
+                    AssessmentScore = 82.0,
+                    SubmittedAssignments = 8,
+                    TotalAssignments = 10,
+                    LmsActivityHours = 28.0,
+                    Risk = RiskLevel.Low,
+                    ComputedRiskScore = 15.0,
+                    Courses = new()
+                    {
+                        new() { CourseCode = "CS101", CourseName = "Foundations of Computing", AttendanceRate = 90, MarksObtained = 85, Credits = 4 },
+                        new() { CourseCode = "CS102", CourseName = "Object-Oriented Programming", AttendanceRate = 87, MarksObtained = 80, Credits = 4 }
+                    }
+                };
+                _repository.AddStudent(self);
+            }
+
+            ViewData["Title"] = "My Student Academic Record";
+            ViewData["CurrentTerm"] = "Fall Semester 2026";
+            ViewBag.IsStudentRole = true;
+            ViewBag.TotalCount = 1;
+            ViewBag.Departments = new[] { "CSE", "ECE", "MECH", "IT", "CIVIL" };
+            ViewBag.LastViewedStudent = self.Name;
+
+            return View(new List<StudentEntity> { self });
+        }
+
         // Unit III: Data Passing Technique 1 - ViewData (Strongly-typed/Dictionary)
         ViewData["Title"] = "Student Records & Risk Monitoring";
         ViewData["CurrentTerm"] = "Fall Semester 2026";
@@ -80,6 +139,25 @@ public class StudentsController : Controller
         // Calculate risk with strategy
         var (score, level, reason) = _riskCalculator.Calculate(student);
         ViewBag.EvaluationReason = reason;
+
+        // Privacy Protection: Students can only view their own scorecard
+        if (User.Identity?.IsAuthenticated == true && User.IsInRole("Student"))
+        {
+            string? userEmail = User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+            string? studentId = User.FindFirst("StudentId")?.Value;
+            string? userName = User.Identity.Name;
+
+            bool isSelf = (studentId != null && student.Id.Equals(studentId, StringComparison.OrdinalIgnoreCase)) ||
+                          (userEmail != null && student.Email.Equals(userEmail, StringComparison.OrdinalIgnoreCase)) ||
+                          (!string.IsNullOrEmpty(userName) && student.Name.Equals(userName, StringComparison.OrdinalIgnoreCase));
+
+            if (!isSelf)
+            {
+                TempData["AlertMessage"] = "Privacy Notice: You may only view your personal academic record.";
+                TempData["AlertType"] = "warning";
+                return RedirectToAction("Index");
+            }
+        }
 
         return View(student);
     }
@@ -163,7 +241,7 @@ public class StudentsController : Controller
 
     // GET: /Students/Edit/{id}
     [HttpGet]
-    [AllowAnonymous]
+    [Authorize(Roles = "Admin,Faculty")]
     public IActionResult Edit(string id)
     {
         var student = _repository.GetStudentById(id);
@@ -200,7 +278,7 @@ public class StudentsController : Controller
     // POST: /Students/Edit/{id}
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [AllowAnonymous]
+    [Authorize(Roles = "Admin,Faculty")]
     public IActionResult Edit(string id, StudentViewModel model)
     {
         ViewBag.Departments = new[] { "CSE", "ECE", "MECH", "IT", "CIVIL" };
@@ -245,7 +323,7 @@ public class StudentsController : Controller
 
     // GET: /Students/Delete/{id}
     [HttpGet]
-    [AllowAnonymous]
+    [Authorize(Roles = "Admin")]
     public IActionResult Delete(string id)
     {
         var student = _repository.GetStudentById(id);
@@ -260,7 +338,7 @@ public class StudentsController : Controller
     // POST: /Students/Delete/{id}
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
-    [AllowAnonymous]
+    [Authorize(Roles = "Admin")]
     public IActionResult DeleteConfirmed(string id)
     {
         var student = _repository.GetStudentById(id);
